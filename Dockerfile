@@ -65,6 +65,9 @@ USER node
 FROM node:20-alpine AS production
 WORKDIR /app
 
+# Install pnpm globally again for production
+RUN npm install -g pnpm
+
 RUN mkdir -p src/generated && chown -R node:node src
 
 # Copy the bundled code from the build stage to the production image
@@ -75,6 +78,7 @@ COPY --chown=node:node --from=builder /app/package.json ./
 
 USER node
 
-# Start the server using the production build
-CMD ["/bin/sh", "-c", "pnpm migration:up && node dist/main.js"]
+# Run migrations and start the server
+CMD pnpm migration:up && node dist/main.js
+
 
