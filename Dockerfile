@@ -4,8 +4,17 @@
 
 FROM node:20-alpine AS base
 
+# Accept optional custom registry (default is empty)
+ARG CUSTOM_REGISTRY=
+
 # Install and use pnpm
 RUN npm install -g pnpm
+
+# Optionally set custom registry if provided
+RUN if [ -n "$CUSTOM_REGISTRY" ]; then \
+      pnpm config set registry "$CUSTOM_REGISTRY"; \
+    fi
+
 
 #############################
 # BUILD FOR LOCAL DEVELOPMENT
@@ -67,4 +76,5 @@ COPY --chown=node:node --from=builder /app/package.json ./
 USER node
 
 # Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+CMD ["/bin/sh", "-c", "pnpm migration:up && node dist/main.js"]
+

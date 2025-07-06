@@ -1,0 +1,92 @@
+services:
+  - type: web
+    name: seamless-api
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MODULES_SET
+        value: monolith
+      - key: APP_NAME
+        value: Seamless API
+      - key: APP_URL
+        value: https://seamless-api.onrender.com
+      - key: APP_PORT
+        value: 3000
+      - key: APP_DEBUG
+        value: false
+      - key: API_PREFIX
+        value: api
+      - key: APP_FALLBACK_LANGUAGE
+        value: en
+      - key: APP_LOG_LEVEL
+        value: debug
+      - key: APP_LOG_SERVICE
+        value: console
+      - key: APP_CORS_ORIGIN
+        value: https://your-frontend.onrender.com
+      - key: DATABASE_TYPE
+        value: postgres
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: seamless-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: seamless-db
+          property: port
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: seamless-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: seamless-db
+          property: password
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: seamless-db
+          property: database
+      - key: DATABASE_LOGGING
+        value: false
+      - key: DATABASE_SYNCHRONIZE
+        value: false
+      - key: DATABASE_MAX_CONNECTIONS
+        value: 100
+      - key: DATABASE_SSL_ENABLED
+        value: true
+      - key: DATABASE_REJECT_UNAUTHORIZED
+        value: false
+      - key: REDIS_HOST
+        value: redis  # optional, if you're using Redis
+      - key: REDIS_PORT
+        value: 6379
+      - key: REDIS_PASSWORD
+        value: redispass
+      - key: REDIS_TLS_ENABLED
+        value: false
+      - key: AUTH_JWT_SECRET
+        generateValue: true
+      - key: AUTH_JWT_TOKEN_EXPIRES_IN
+        value: 1d
+      - key: AUTH_REFRESH_SECRET
+        generateValue: true
+      - key: AUTH_REFRESH_TOKEN_EXPIRES_IN
+        value: 365d
+      - key: AUTH_FORGOT_SECRET
+        generateValue: true
+      - key: AUTH_FORGOT_TOKEN_EXPIRES_IN
+        value: 7d
+      - key: AUTH_CONFIRM_EMAIL_SECRET
+        generateValue: true
+      - key: AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN
+        value: 1d
+
+databases:
+  - name: seamless-db
+    region: oregon
+    plan: free
+    postgresMajorVersion: 15

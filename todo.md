@@ -1,0 +1,1 @@
+docker compose build --build-arg CUSTOM_REGISTRY=https://registry.npmmirror.com
