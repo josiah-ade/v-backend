@@ -13,7 +13,6 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { SessionEntity } from './session.entity';
 
 @Entity('user')
 export class UserEntity extends AbstractEntity {
@@ -25,10 +24,7 @@ export class UserEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_user_id' })
   id!: Uuid;
 
-  @Column({
-    length: 50,
-    nullable: true,
-  })
+  @Column({ length: 50, nullable: true })
   @Index('UQ_user_username', {
     where: '"deleted_at" IS NULL',
     unique: true,
@@ -55,8 +51,11 @@ export class UserEntity extends AbstractEntity {
   })
   deletedAt: Date;
 
-  @OneToMany(() => SessionEntity, (session) => session.user)
-  sessions?: SessionEntity[];
+  @OneToMany(
+    () => require('./session.entity').SessionEntity,
+    (session: any) => session.user
+  )
+  sessions?: import('./session.entity').SessionEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user)
   posts: Relation<PostEntity[]>;

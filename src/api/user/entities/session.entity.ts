@@ -7,7 +7,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 
 @Entity('session')
 export class SessionEntity extends AbstractEntity {
@@ -34,11 +33,14 @@ export class SessionEntity extends AbstractEntity {
   })
   userId: Uuid;
 
+  @ManyToOne(
+    () => require('./user.entity').UserEntity,
+    (user: any) => user.sessions
+  )
   @JoinColumn({
     name: 'user_id',
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_session_user',
   })
-  @ManyToOne(() => UserEntity, (user) => user.sessions)
-  user!: UserEntity;
+  user!: import('./user.entity').UserEntity;
 }
