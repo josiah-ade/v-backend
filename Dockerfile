@@ -50,10 +50,10 @@ COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
 RUN pnpm build
 
-# Install production dependencies and add ts-node, typescript for migrations
+# Install production dependencies and add ts-node, typescript, tsconfig-paths
 ENV NODE_ENV production
 RUN pnpm install --prod
-RUN pnpm add ts-node typescript
+RUN pnpm add ts-node typescript tsconfig-paths
 
 USER node
 
@@ -66,9 +66,10 @@ WORKDIR /app
 
 RUN mkdir -p src/database src/generated && chown -R node:node src
 
-# Copy the bundled code and data-source from the build stage
+# Copy the bundled code, data-source, and tsconfig from the build stage
 COPY --chown=node:node --from=builder /app/src/generated/i18n.generated.ts ./src/generated/i18n.generated.ts
 COPY --chown=node:node --from=builder /app/src/database/data-source.ts ./src/database/data-source.ts
+COPY --chown=node:node --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
 COPY --chown=node:node --from=builder /app/package.json ./
