@@ -50,7 +50,7 @@ COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
 RUN pnpm build
 
-# Keep ts-node and typescript for migrations in production
+# Install production dependencies and add ts-node, typescript for migrations
 ENV NODE_ENV production
 RUN pnpm install --prod
 RUN pnpm add ts-node typescript
