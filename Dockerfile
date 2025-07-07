@@ -65,6 +65,9 @@ USER node
 FROM node:20-alpine AS production
 WORKDIR /app
 
+# Install all dependencies (including devDependencies)
+RUN pnpm install
+
 RUN mkdir -p src/generated && chown -R node:node src
 
 # Copy the bundled code from the build stage to the production image
