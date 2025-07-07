@@ -50,10 +50,10 @@ COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
 RUN pnpm build
 
-# Remove unnecessary packages and reinstall only production dependencies
+# Keep ts-node and typescript for migrations in production
 ENV NODE_ENV production
-RUN pnpm prune --prod
 RUN pnpm install --prod
+RUN pnpm add ts-node typescript
 
 USER node
 
@@ -64,10 +64,11 @@ USER node
 FROM base AS production
 WORKDIR /app
 
-RUN mkdir -p src/generated && chown -R node:node src
+RUN mkdir -p src/database src/generated && chown -R node:node src
 
-# Copy the bundled code from the build stage to the production image
+# Copy the bundled code and data-source from the build stage
 COPY --chown=node:node --from=builder /app/src/generated/i18n.generated.ts ./src/generated/i18n.generated.ts
+COPY --chown=node:node --from=builder /app/src/database/data-source.ts ./src/database/data-source.ts
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
 COPY --chown=node:node --from=builder /app/package.json ./
