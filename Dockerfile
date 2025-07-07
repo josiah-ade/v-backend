@@ -15,12 +15,11 @@ RUN if [ -n "$CUSTOM_REGISTRY" ]; then \
       pnpm config set registry "$CUSTOM_REGISTRY"; \
     fi
 
-
 #############################
 # BUILD FOR LOCAL DEVELOPMENT
 #############################
 
-FROM base As development
+FROM base AS development
 WORKDIR /app
 RUN chown -R node:node /app
 
@@ -51,7 +50,7 @@ COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
 RUN pnpm build
 
-# Removes unnecessary packages adn re-install only production dependencies
+# Remove unnecessary packages and reinstall only production dependencies
 ENV NODE_ENV production
 RUN pnpm prune --prod
 RUN pnpm install --prod
@@ -62,11 +61,8 @@ USER node
 # BUILD FOR PRODUCTION
 ######################
 
-FROM node:20-alpine AS production
+FROM base AS production
 WORKDIR /app
-
-# Install all dependencies (including devDependencies)
-RUN pnpm install
 
 RUN mkdir -p src/generated && chown -R node:node src
 
@@ -80,4 +76,3 @@ USER node
 
 # Start the server using the production build
 CMD ["/bin/sh", "-c", "pnpm migration:up && node dist/main.js"]
-
