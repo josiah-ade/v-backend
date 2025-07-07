@@ -71,6 +71,10 @@ export class EmailProcessor extends WorkerHost {
 
   @OnWorkerEvent('error')
   async onError(job: Job, error: Error) {
-    this.logger.error(`Job ${job.id} has failed with error: ${error.message}`);
+    if (error) {
+      this.logger.error(`Job ${job?.id} failed: ${error.message}`);
+    } else {
+      this.logger.error(`Job ${job?.id} failed with an unknown error.`);
+    }
   }
 }
