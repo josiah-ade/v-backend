@@ -5,6 +5,8 @@ services:
     region: oregon
     plan: free
     dockerfilePath: ./Dockerfile
+    startCommand: pnpm typeorm migration:run && node dist/main.js
+
     envVars:
       - key: NODE_ENV
         value: production
@@ -61,7 +63,7 @@ services:
       - key: DATABASE_REJECT_UNAUTHORIZED
         value: false
       - key: REDIS_HOST
-        value: redis  # optional, if you're using Redis
+        value: redis # optional, if you're using Redis
       - key: REDIS_PORT
         value: 6379
       - key: REDIS_PASSWORD

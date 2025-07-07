@@ -79,7 +79,7 @@ COPY --chown=node:node --from=builder /app/package.json ./
 USER node
 
 # Run migrations and start the server
-CMD [ "sh", "-c", "pnpm migration:up && node dist/main.js" ]
+CMD ["node", "dist/main.js"]
 
 
 
