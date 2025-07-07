@@ -42,5 +42,5 @@ export class SessionEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_session_user',
   })
-  user!: import('./user.entity').UserEntity;
+  user: any; 
 }
