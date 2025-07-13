@@ -90,7 +90,7 @@ export class FavouriteService {
 
     return plainToInstance(
       DeleteFavouriteResDto,
-      buildSuccessMessage('favourite removed successfully'),
+      buildSuccessMessage('favourite removed successfully.'),
     );
   }
 }
