@@ -8,7 +8,7 @@ FROM node:20-alpine AS base
 ARG CUSTOM_REGISTRY=
 
 # Install and use pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.12.3
 
 # Optionally set custom registry if provided
 RUN if [ -n "$CUSTOM_REGISTRY" ]; then \
@@ -23,17 +23,19 @@ FROM base AS development
 WORKDIR /app
 RUN chown -R node:node /app
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
+# Only copy package files first to leverage cache
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including devDependencies)
 RUN pnpm install
 
-# Bundle app source
+# Now copy full source
 COPY --chown=node:node . .
 
-# Use the node user from the image (instead of the root user)
+# Use non-root user
 USER node
 
+CMD ["pnpm", "start:dev"]
 #####################
 # BUILD BUILDER IMAGE
 #####################
@@ -41,16 +43,18 @@ USER node
 FROM base AS builder
 WORKDIR /app
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
+
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 COPY --chown=node:node --from=development /app/node_modules ./node_modules
 COPY --chown=node:node --from=development /app/src ./src
 COPY --chown=node:node --from=development /app/tsconfig.json ./tsconfig.json
 COPY --chown=node:node --from=development /app/tsconfig.build.json ./tsconfig.build.json
 COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
+# Build the app
 RUN pnpm build
 
-# Install production dependencies and add ts-node, typescript, tsconfig-paths
+# Install only production dependencies and extra tools
 ENV NODE_ENV production
 RUN pnpm install --prod
 RUN pnpm add ts-node typescript tsconfig-paths
@@ -66,13 +70,12 @@ WORKDIR /app
 
 RUN mkdir -p src/database src/generated && chown -R node:node src
 
-# Copy the bundled code, data-source, and tsconfig from the build stage
 COPY --chown=node:node --from=builder /app/src/generated/i18n.generated.ts ./src/generated/i18n.generated.ts
 COPY --chown=node:node --from=builder /app/src/database/data-source.ts ./src/database/data-source.ts
 COPY --chown=node:node --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
-COPY --chown=node:node --from=builder /app/package.json ./
+COPY --chown=node:node --from=builder /app/package.json ./package.json
 
 USER node
 

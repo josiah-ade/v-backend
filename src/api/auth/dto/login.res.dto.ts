@@ -12,10 +12,6 @@ export class LoginResDto {
   accessToken!: string;
 
   @Expose()
-  @StringField()
-  refreshToken!: string;
-
-  @Expose()
   @NumberField()
   tokenExpires!: number;
 }

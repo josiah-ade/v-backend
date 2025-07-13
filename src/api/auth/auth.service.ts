@@ -1,4 +1,5 @@
 import { IEmailJob, IVerifyEmailJob } from '@/common/interfaces/job.interface';
+import { AuthCookieService } from '@/common/services/auth-cookie.service';
 import { Branded } from '@/common/types/types';
 import { AllConfigType } from '@/config/config.type';
 import { SYSTEM_USER_ID } from '@/constants/app.constant';
@@ -19,6 +20,7 @@ import { Queue } from 'bullmq';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
+import { Response } from 'express';
 import ms from 'ms';
 import { Repository } from 'typeorm';
 import { SessionEntity } from '../user/entities/session.entity';
@@ -46,6 +48,7 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly jwtService: JwtService,
+    private readonly authCookieService: AuthCookieService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectQueue(QueueName.EMAIL)
@@ -59,7 +62,7 @@ export class AuthService {
    * @param dto LoginReqDto
    * @returns LoginResDto
    */
-  async signIn(dto: LoginReqDto): Promise<LoginResDto> {
+  async signIn(dto: LoginReqDto, res: Response): Promise<LoginResDto> {
     const { email, password } = dto;
     const user = await this.userRepository.findOne({
       where: { email },
@@ -92,13 +95,29 @@ export class AuthService {
       hash,
     });
 
+    const refreshExpiresIn = this.configService.getOrThrow(
+      'auth.refreshExpires',
+      {
+        infer: true,
+      },
+    );
+
+    const refreshExpiresInMs = ms(refreshExpiresIn);
+
+    this.authCookieService.setRefreshTokenCookie(
+      res,
+      token.refreshToken,
+      refreshExpiresInMs,
+    );
+
+    const { refreshToken, ...safeToken } = token;
     return plainToInstance(LoginResDto, {
       userId: user.id,
-      ...token,
+      ...safeToken,
     });
   }
 
-  async register(dto: RegisterReqDto): Promise<RegisterResDto> {
+  async register(dto: RegisterReqDto, res: Response): Promise<RegisterResDto> {
     // Check if the user already exists
     const isExistUser = await UserEntity.exists({
       where: { email: dto.email },
@@ -115,8 +134,20 @@ export class AuthService {
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });
-
     await user.save();
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = new SessionEntity({
+      hash,
+      userId: user.id,
+      createdBy: SYSTEM_USER_ID,
+      updatedBy: SYSTEM_USER_ID,
+    });
+    await session.save();
 
     // Send email verification
     const token = await this.createVerificationToken({ id: user.id });
@@ -140,8 +171,32 @@ export class AuthService {
       { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
     );
 
+    const regToken = await this.createToken({
+      id: user.id,
+      sessionId: session.id,
+      hash,
+    });
+
+    const refreshExpiresIn = this.configService.getOrThrow(
+      'auth.refreshExpires',
+      {
+        infer: true,
+      },
+    );
+
+    const refreshExpiresInMs = ms(refreshExpiresIn);
+
+    this.authCookieService.setRefreshTokenCookie(
+      res,
+      regToken.refreshToken,
+      refreshExpiresInMs,
+    );
+
+    const { refreshToken, ...safeToken } = regToken;
+
     return plainToInstance(RegisterResDto, {
       userId: user.id,
+      ...safeToken,
     });
   }
 

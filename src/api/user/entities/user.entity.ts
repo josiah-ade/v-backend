@@ -1,3 +1,4 @@
+import { FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -53,12 +54,15 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany(
     () => require('./session.entity').SessionEntity,
-    (session: any) => session.user
+    (session: any) => session.user,
   )
   sessions?: import('./session.entity').SessionEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user)
   posts: Relation<PostEntity[]>;
+
+  @OneToMany(() => FavouriteEntity, (fav) => fav.user)
+  favourites: FavouriteEntity[];
 
   @BeforeInsert()
   @BeforeUpdate()

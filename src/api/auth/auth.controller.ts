@@ -1,7 +1,8 @@
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
@@ -24,14 +25,20 @@ export class AuthController {
     summary: 'Sign in',
   })
   @Post('email/login')
-  async signIn(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
-    return await this.authService.signIn(userLogin);
+  async signIn(
+    @Body() userLogin: LoginReqDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LoginResDto> {
+    return await this.authService.signIn(userLogin, res);
   }
 
   @ApiPublic()
   @Post('email/register')
-  async register(@Body() dto: RegisterReqDto): Promise<RegisterResDto> {
-    return await this.authService.register(dto);
+  async register(
+    @Body() dto: RegisterReqDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RegisterResDto> {
+    return await this.authService.register(dto, res);
   }
 
   @ApiAuth({

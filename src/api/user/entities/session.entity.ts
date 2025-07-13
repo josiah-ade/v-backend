@@ -26,7 +26,7 @@ export class SessionEntity extends AbstractEntity {
     length: 255,
   })
   hash!: string;
-
+ 
   @Column({
     name: 'user_id',
     type: 'uuid',
