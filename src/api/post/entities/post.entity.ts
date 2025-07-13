@@ -1,7 +1,7 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
-import { 
+import {
   Column,
   DeleteDateColumn,
   Entity,
@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
- 
+
 @Entity('post')
 export class PostEntity extends AbstractEntity {
   constructor(data?: Partial<PostEntity>) {
@@ -33,7 +33,7 @@ export class PostEntity extends AbstractEntity {
   @Column({ nullable: true })
   content?: string;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId!: Uuid;
 
   @JoinColumn({

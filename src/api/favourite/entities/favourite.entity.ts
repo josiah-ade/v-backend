@@ -25,10 +25,10 @@ export class FavouriteEntity extends AbstractEntity {
   })
   id!: Uuid;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId!: Uuid;
 
-  @Column({ name: 'style_id' })
+  @Column({ name: 'style_id', type: 'uuid' })
   styleId!: Uuid;
 
   @JoinColumn({
