@@ -1,5 +1,4 @@
 import { AllConfigType } from '@/config/config.type';
-import { Environment } from '@/constants/app.constant';
 import { Public } from '@/decorators/public.decorator';
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -26,20 +25,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Health check' })
   @Get()
   @HealthCheck()
-  // async check(): Promise<HealthCheckResult> {
-  //   const list = [
-  //     () => this.db.pingCheck('database'),
-  //     ...(this.configService.get('app.nodeEnv', { infer: true }) ===
-  //     Environment.DEVELOPMENT
-  //       ? [
-  //           () =>
-  //             this.http.pingCheck(
-  //               'app',
-  //               `${this.configService.get('app.url', { infer: true })}/health`,
-  //             ),
-  //         ]
-  //       : []),
-  //   ];
-  //   return this.health.check(list);
-  // }
+  async check(): Promise<HealthCheckResult> {
+    return this.health.check([() => this.db.pingCheck('database')]);
+  }
 }

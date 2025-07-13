@@ -4,6 +4,7 @@
   },
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -22,6 +23,7 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "importHelpers": true,
+    "useDefineForClassFields": false,
     "paths": {
       "@/api/*": ["src/api/*"],
       "@/background/*": ["src/background/*"],
