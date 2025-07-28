@@ -4,7 +4,7 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class FavouriteResDto {
   @UUIDField()
-  @Expose()
+  @Expose() 
   id: string;
 
   @StringField()

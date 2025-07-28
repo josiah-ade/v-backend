@@ -9,7 +9,6 @@ import { buildPaginator } from '@/utils/cursor-pagination';
 import { paginate } from '@/utils/offset-pagination';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateUserReqDto } from './dto/create-user.req.dto';
@@ -105,7 +104,7 @@ export class UserService {
   }
 
   async findOne(id: Uuid): Promise<UserResDto> {
-    assert(id, 'id is required');
+     if (!id) throw new ValidationException(ErrorCode.R000);
     const user = await this.userRepository.findOneByOrFail({ id });
 
     return user.toDto(UserResDto);

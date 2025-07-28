@@ -1,3 +1,6 @@
+import { AiTextEntity } from '@/api/ai/entities/ai.text.entity';
+import { AvatarEntity } from '@/api/avatar/entities/avatar.entity';
+import { CreationEntity } from '@/api/creation/entities/creation.entity';
 import { FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { Uuid } from '@/common/types/common.type';
@@ -62,7 +65,16 @@ export class UserEntity extends AbstractEntity {
   posts: Relation<PostEntity[]>;
 
   @OneToMany(() => FavouriteEntity, (fav) => fav.user)
-  favourites: FavouriteEntity[];
+  favourites: Relation<FavouriteEntity[]>;
+
+  @OneToMany(() => AvatarEntity, (avatar) => avatar.user)
+  avatars: Relation<AvatarEntity[]>;
+
+  @OneToMany(() => AiTextEntity, (ai) => ai.user)
+  ai_text: Relation<AiTextEntity[]>;
+
+  @OneToMany(() => CreationEntity, (creation) => creation.user)
+  creations: Relation<CreationEntity[]>;
 
   @BeforeInsert()
   @BeforeUpdate()

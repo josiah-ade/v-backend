@@ -13,12 +13,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { ListUserReqDto } from '../user/dto/list-user.req.dto';
 import { CreateFavouriteReqDto } from './dto/create-favourite.req.dto';
 import { CreateFavouriteResDto } from './dto/create-favourite.res.dto';
-import { FavouriteResDto } from './dto/favourite.res.dto';
-import { FavouriteService } from './favourite.services';
 import { DeleteFavouriteResDto } from './dto/delete-favourite.res.dto';
+import { FavouriteResDto } from './dto/favourite.res.dto';
+import { ListFavouriteReqDto } from './dto/list-favourites.req.dto';
+import { FavouriteService } from './favourite.service';
 
 @ApiTags('favourites')
 @Controller({
@@ -34,10 +34,10 @@ export class FavouriteController {
     summary: 'Get favorites',
   })
   async getFavourites(
-    @Query() reqDto: ListUserReqDto,
+    @Query() reqDto: ListFavouriteReqDto,
     @CurrentUser('id') userId: Uuid,
   ): Promise<OffsetPaginatedDto<FavouriteResDto>> {
-    return this.favouriteService.findAllById(reqDto, userId);
+    return this.favouriteService.getFavourites(reqDto, userId);
   }
 
   @Post('/create')
@@ -45,11 +45,11 @@ export class FavouriteController {
     type: CreateFavouriteResDto,
     summary: 'Add favorites',
   })
-  async addFavourites(
+  async createFavourites(
     @Body() reqDto: CreateFavouriteReqDto,
     @CurrentUser('id') userId: Uuid,
   ): Promise<CreateFavouriteResDto> {
-    return this.favouriteService.create(reqDto, userId);
+    return this.favouriteService.createFavourites(reqDto, userId);
   }
 
   @Delete('/delete/:id')
@@ -61,6 +61,6 @@ export class FavouriteController {
     @Param('id', ParseUUIDPipe) id: Uuid,
     @CurrentUser('id') userId: Uuid,
   ): Promise<DeleteFavouriteResDto> {
-    return this.favouriteService.delete(id,userId);
+    return this.favouriteService.deleteFavourites(id, userId);
   }
 }

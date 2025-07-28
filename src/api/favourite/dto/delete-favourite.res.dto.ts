@@ -1,13 +1,5 @@
-import { StringField } from '@/decorators/field.decorators';
-import { Exclude, Expose } from 'class-transformer';
+import { SuccessResDto } from '@/common/dto/success.dto';
+import { Exclude } from 'class-transformer';
 
 @Exclude()
-export class DeleteFavouriteResDto {
-  @Expose()
-  @StringField()
-  status!: string;
-
-  @Expose()
-  @StringField()
-  message!: string;
-}
+export class DeleteFavouriteResDto extends SuccessResDto {}

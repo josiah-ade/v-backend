@@ -1,8 +1,9 @@
 import { OffsetPaginatedDto } from '@/common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@/common/types/common.type';
+import { ErrorCode } from '@/constants/error-code.constant';
+import { ValidationException } from '@/exceptions/validation.exception';
 import { paginate } from '@/utils/offset-pagination';
 import { Injectable } from '@nestjs/common';
-import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import { ListUserReqDto } from '../user/dto/list-user.req.dto';
 import { CreatePostReqDto } from './dto/create-post.req.dto';
@@ -30,7 +31,7 @@ export class PostService {
   }
 
   async findOne(id: Uuid): Promise<PostResDto> {
-    assert(id, 'id is required');
+    if (!id) throw new ValidationException(ErrorCode.R000);
     const post = await PostEntity.findOneByOrFail({ id });
 
     return post.toDto(PostResDto);

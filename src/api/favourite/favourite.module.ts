@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { FavouriteController } from './favourite.controller';
-import { FavouriteService } from './favourite.services';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FavouriteEntity } from './entities/favourite.entity';
+import { FavouriteController } from './favourite.controller';
+import { FavouriteService } from './favourite.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([FavouriteEntity])],

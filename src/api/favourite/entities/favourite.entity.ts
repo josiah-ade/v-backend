@@ -1,3 +1,4 @@
+import { CreationEntity } from '@/api/creation/entities/creation.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -13,7 +14,7 @@ import {
 } from 'typeorm';
 
 @Entity('favourite')
-@Unique(['userId', 'image', 'title'])
+@Unique(['creationId'])
 export class FavouriteEntity extends AbstractEntity {
   constructor(data?: Partial<FavouriteEntity>) {
     super();
@@ -28,9 +29,6 @@ export class FavouriteEntity extends AbstractEntity {
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: Uuid;
 
-  @Column({ name: 'style_id', type: 'uuid' })
-  styleId!: Uuid;
-
   @JoinColumn({
     name: 'user_id',
     referencedColumnName: 'id',
@@ -40,6 +38,19 @@ export class FavouriteEntity extends AbstractEntity {
     onDelete: 'CASCADE',
   })
   user: Relation<UserEntity>;
+
+  @Column({ name: 'creation_id', type: 'uuid' })
+  creationId!: string;
+
+  @JoinColumn({
+    name: 'creation_id',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'FK_favourite_creation_id',
+  })
+  @ManyToOne(() => CreationEntity, {
+    onDelete: 'CASCADE',
+  })
+  creation: Relation<CreationEntity>;
 
   @Column()
   title!: string;
