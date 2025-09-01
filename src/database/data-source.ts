@@ -22,7 +22,7 @@ export const AppDataSource = new DataSource({
   migrationsTableName: 'migrations',
   poolSize: process.env.DATABASE_MAX_CONNECTIONS
     ? parseInt(process.env.DATABASE_MAX_CONNECTIONS, 10)
-    : 100,
+    : 20,
   ssl:
     process.env.DATABASE_SSL_ENABLED === 'true'
       ? {
