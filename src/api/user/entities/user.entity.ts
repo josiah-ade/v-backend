@@ -107,17 +107,16 @@
 //   }
 // }
 
-
-import { type ReviewEntity } from '@/api/market-place/product/entities/review.entity';
-import { type PostEntity } from '@/api/post/entities/post.entity';
-import { type FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
-import { type AvatarEntity } from '@/api/avatar/entities/avatar.entity';
 import { type AiTextEntity } from '@/api/ai/entities/ai.text.entity';
+import { type AvatarEntity } from '@/api/avatar/entities/avatar.entity';
 import { type CreationEntity } from '@/api/creation/entities/creation.entity';
-import { type ProductEntity } from '@/api/market-place/product/entities/product.entity';
+import { type FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
 import { type BidEntity } from '@/api/market-place/bid/entities/bid.entity';
 import { type MessageEntity } from '@/api/market-place/chat/entities/message.entity';
-import { type SessionEntity } from './session.entity'; // Adjust path if needed
+import { type ProductEntity } from '@/api/market-place/product/entities/product.entity';
+import { type ReviewEntity } from '@/api/market-place/product/entities/review.entity';
+import { type PostEntity } from '@/api/post/entities/post.entity';
+import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { hashPassword as hashPass } from '@/utils/password.util';
 import {
@@ -131,7 +130,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { Uuid } from '@/common/types/common.type';
+import { type SessionEntity } from './session.entity'; // Adjust path if needed
 
 @Entity('user')
 export class UserEntity extends AbstractEntity {
@@ -171,61 +170,65 @@ export class UserEntity extends AbstractEntity {
   deletedAt!: Date;
 
   @OneToMany(
-    () => () => require('@/api/market-place/product/entities/review.entity').ReviewEntity,
+    () =>
+      require('@/api/market-place/product/entities/review.entity').ReviewEntity,
     (review: ReviewEntity) => review.user,
   )
   reviews!: Relation<ReviewEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/post/entities/post.entity').PostEntity,
+    () => require('@/api/post/entities/post.entity').PostEntity,
     (post: PostEntity) => post.user,
   )
   posts!: Relation<PostEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/favourite/entities/favourite.entity').FavouriteEntity,
+    () => require('@/api/favourite/entities/favourite.entity').FavouriteEntity,
     (fav: FavouriteEntity) => fav.user,
   )
   favourites!: Relation<FavouriteEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/avatar/entities/avatar.entity').AvatarEntity,
+    () => require('@/api/avatar/entities/avatar.entity').AvatarEntity,
     (avatar: AvatarEntity) => avatar.user,
   )
   avatars!: Relation<AvatarEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/ai/entities/ai.text.entity').AiTextEntity,
+    () => require('@/api/ai/entities/ai.text.entity').AiTextEntity,
     (ai: AiTextEntity) => ai.user,
   )
   ai_text!: Relation<AiTextEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/creation/entities/creation.entity').CreationEntity,
+    () => require('@/api/creation/entities/creation.entity').CreationEntity,
     (creation: CreationEntity) => creation.user,
   )
   creations!: Relation<CreationEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/market-place/product/entities/product.entity').ProductEntity,
+    () =>
+      require('@/api/market-place/product/entities/product.entity')
+        .ProductEntity,
     (product: ProductEntity) => product.user,
   )
   products!: Relation<ProductEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/market-place/bid/entities/bid.entity').BidEntity,
+    () => require('@/api/market-place/bid/entities/bid.entity').BidEntity,
     (bid: BidEntity) => bid.user,
   )
   bids!: Relation<BidEntity[]>;
 
   @OneToMany(
-    () => () => require('@/api/market-place/chat/entities/message.entity').MessageEntity,
+    () =>
+      require('@/api/market-place/chat/entities/message.entity').MessageEntity,
     (msg: MessageEntity) => msg.sender,
   )
   messages!: Relation<MessageEntity[]>;
 
   @OneToMany(
-    () => () => require('./session.entity').SessionEntity,
+    () => require('./session.entity').SessionEntity,
     (session: SessionEntity) => session.user,
   )
   sessions?: Relation<SessionEntity[]>;
