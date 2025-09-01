@@ -34,8 +34,8 @@ export const AppDataSource = new DataSource({
         }
       : undefined,
   extra: {
-    dnsLookup: (hostname: string, _: any, cb: any) =>
-      dns.lookup(hostname, { family: 4 }, cb),
+    lookup: (hostname: string, options: any, callback: any) =>
+      dns.lookup(hostname, { family: 4 }, callback),
   },
   seeds: [__dirname + '/seeds/**/*{.ts,.js}'],
   seedTracking: true,
