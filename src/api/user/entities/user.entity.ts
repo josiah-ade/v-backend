@@ -2,6 +2,10 @@ import { AiTextEntity } from '@/api/ai/entities/ai.text.entity';
 import { AvatarEntity } from '@/api/avatar/entities/avatar.entity';
 import { CreationEntity } from '@/api/creation/entities/creation.entity';
 import { FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
+import { BidEntity } from '@/api/market-place/bid/entities/bid.entity';
+import { MessageEntity } from '@/api/market-place/chat/entities/message.entity';
+import { ProductEntity } from '@/api/market-place/product/entities/product.entity';
+import { ReviewEntity } from '@/api/market-place/product/entities/review.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -48,6 +52,9 @@ export class UserEntity extends AbstractEntity {
   @Column({ default: '' })
   image?: string;
 
+  @Column({ name: 'last_seen', type: 'timestamptz', nullable: true })
+  lastSeen?: Date;
+
   @DeleteDateColumn({
     name: 'deleted_at',
     type: 'timestamptz',
@@ -75,6 +82,21 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany(() => CreationEntity, (creation) => creation.user)
   creations: Relation<CreationEntity[]>;
+
+  @OneToMany(() => ProductEntity, (product) => product.user)
+  products!: Relation<ProductEntity[]>;
+
+  @OneToMany(() => BidEntity, (bid) => bid.user)
+  bids!: Relation<BidEntity[]>;
+
+  @OneToMany(() => ReviewEntity, (review) => review.product)
+  reviews!: Relation<ReviewEntity[]>;
+
+  @OneToMany(() => MessageEntity, (msg) => msg.sender)
+  messages!: Relation<MessageEntity[]>;
+
+  //   @OneToMany(() => import('@/api/market-place/chat/entities/message.entity').MessageEntity, (msg) => msg.sender)
+  // messages!: Relation<import('@/api/market-place/chat/entities/message.entity').MessageEntity[]>;
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -5,6 +5,8 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.R000]: 'Id not provided',
   [ErrorCode.I002]: 'Item not found',
   [ErrorCode.I003]: 'Item already exist',
+  [ErrorCode.I004]: 'Item id missing',
+  [ErrorCode.I005]: 'File not uploaded',
 
   [ErrorCode.V001]: 'Required field is empty',
   [ErrorCode.V002]: 'Invalid field value',
@@ -23,4 +25,8 @@ export const ErrorMessages: Record<ErrorCode, string> = {
 
   // Creation
   [ErrorCode.CR001]: 'You already have a creation with this title',
+
+  // Bids
+  [ErrorCode.BI001]: 'Duplicate bid amounts are not allowed on the same item.',
+  [ErrorCode.BI002]: 'You cannot bid on your own item or product.',
 };

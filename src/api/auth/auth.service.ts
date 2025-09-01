@@ -76,6 +76,8 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    await this.userRepository.update(user.id, { lastSeen: new Date() });
+
     const hash = crypto
       .createHash('sha256')
       .update(randomStringGenerator())
@@ -129,8 +131,10 @@ export class AuthService {
 
     // Register user
     const user = new UserEntity({
+      username:dto.username,
       email: dto.email,
       password: dto.password,
+      lastSeen: new Date(), 
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });

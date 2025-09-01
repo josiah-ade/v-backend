@@ -18,6 +18,7 @@ import { type AllConfigType } from './config/config.type';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { AuthGuard } from './guards/auth.guard';
 import setupSwagger from './utils/setup-swagger';
+import { SocketIoAdapter } from './common/adapters/socket-io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -46,6 +47,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
     credentials: true,
   });
+
+  console.log(`Server will run on port: ${configService.getOrThrow('app.port', { infer: true })}`);
   console.info('CORS Origin:', corsOrigin);
 
   // Use global prefix if you don't have subdomain
@@ -80,6 +83,9 @@ async function bootstrap() {
   if (isDevelopment) {
     setupSwagger(app);
   }
+
+   const socketAdapter = new SocketIoAdapter(app, configService);
+  app.useWebSocketAdapter(socketAdapter);
 
   await app.listen(configService.getOrThrow('app.port', { infer: true }));
 

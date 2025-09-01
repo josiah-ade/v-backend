@@ -26,3 +26,26 @@ export async function paginate<T>(
 
   return [entities, metaDto];
 }
+
+
+export async function paginateJoin<T>(
+  builder: SelectQueryBuilder<T>,
+  pageOptionsDto: PageOptionsDto,
+  options?: Partial<{ skipCount: boolean; takeAll: boolean }>,
+): Promise<[T[], OffsetPaginationDto]> {
+  if (!options?.takeAll) {
+    builder.skip(pageOptionsDto.offset).take(pageOptionsDto.limit);
+  }
+
+  const rawResults: T[] = await builder.getRawMany();
+
+  let count = -1;
+
+  if (!options?.skipCount) {
+    count = await builder.getCount();
+  }
+
+  const metaDto = new OffsetPaginationDto(count, pageOptionsDto);
+
+  return [rawResults, metaDto];
+}
