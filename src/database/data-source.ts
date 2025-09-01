@@ -1,3 +1,4 @@
+import dns from 'dns';
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SeederOptions } from 'typeorm-extension';
@@ -32,6 +33,10 @@ export const AppDataSource = new DataSource({
           cert: process.env.DATABASE_CERT ?? undefined,
         }
       : undefined,
+  extra: {
+    dnsLookup: (hostname: string, _: any, cb: any) =>
+      dns.lookup(hostname, { family: 4 }, cb),
+  },
   seeds: [__dirname + '/seeds/**/*{.ts,.js}'],
   seedTracking: true,
   factories: [__dirname + '/factories/**/*{.ts,.js}'],
