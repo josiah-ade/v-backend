@@ -94,7 +94,7 @@ export class ReviewEntity extends AbstractEntity {
   userId!: Uuid;
 
   @ManyToOne(
-    () => () => require('@/api/user/entities/user.entity').UserEntity,
+    () => require('@/api/user/entities/user.entity').UserEntity,
     (user: UserEntity) => user.reviews,
     { onDelete: 'CASCADE' },
   )
