@@ -1,4 +1,3 @@
-import dns from 'dns';
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SeederOptions } from 'typeorm-extension';
@@ -11,7 +10,7 @@ export const AppDataSource = new DataSource({
   //   ? parseInt(process.env.DATABASE_PORT, 10)
   //   : 5432,
   // username: process.env.DATABASE_USERNAME,
-  // password: process.env.DATABASE_PASSWORD,
+  // password: process.env.DATABASE_PASSWORD, 
   // database: process.env.DATABASE_NAME,
   synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
   dropSchema: false,
@@ -33,10 +32,6 @@ export const AppDataSource = new DataSource({
           cert: process.env.DATABASE_CERT ?? undefined,
         }
       : undefined,
-  extra: {
-    lookup: (hostname: string, options: any, callback: any) =>
-      dns.lookup(hostname, { family: 4 }, callback),
-  },
   seeds: [__dirname + '/seeds/**/*{.ts,.js}'],
   seedTracking: true,
   factories: [__dirname + '/factories/**/*{.ts,.js}'],
