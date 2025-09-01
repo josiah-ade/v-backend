@@ -65,8 +65,8 @@
 //   deletedAt!: Date | null;
 // }
 
-import { type UserEntity } from '@/api/user/entities/user.entity'; // ✅ type-only import (no runtime dependency)
-import { Uuid } from '@/common/types/common.type';
+import { type UserEntity } from '@/api/user/entities/user.entity'; // ✅ type-only
+import { type ProductEntity } from './product.entity';            // ✅ type-only
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -76,6 +76,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Uuid } from '@/common/types/common.type';
 
 @Entity('review')
 export class ReviewEntity extends AbstractEntity {
@@ -93,7 +94,7 @@ export class ReviewEntity extends AbstractEntity {
   userId!: Uuid;
 
   @ManyToOne(
-    () => require('@/api/user/entities/user.entity').UserEntity,
+    () => require('@/api/user/entities/user.entity').UserEntity, // ✅ runtime safe
     (user: UserEntity) => user.reviews,
     { onDelete: 'CASCADE' },
   )
@@ -108,10 +109,8 @@ export class ReviewEntity extends AbstractEntity {
   productId!: Uuid;
 
   @ManyToOne(
-    () =>
-      require('@/api/market-place/product/entities/product.entity')
-        .ProductEntity,
-    (product: any) => product.reviews,
+    () => require('./product.entity').ProductEntity, // ✅ runtime safe
+    (product: ProductEntity) => product.reviews,
     { onDelete: 'CASCADE' },
   )
   @JoinColumn({
@@ -119,7 +118,7 @@ export class ReviewEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_review_product_id',
   })
-  product!: import('./product.entity').ProductEntity;
+  product!: ProductEntity; // ✅ only type usage here
 
   @Column({ name: 'store_id', type: 'uuid' })
   storeId!: Uuid;
