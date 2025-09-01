@@ -131,6 +131,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
+import { Uuid } from '@/common/types/common.type';
 
 @Entity('user')
 export class UserEntity extends AbstractEntity {
@@ -140,7 +141,7 @@ export class UserEntity extends AbstractEntity {
   }
 
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_user_id' })
-  id!: string;
+  id!: Uuid;
 
   @Column({ length: 50, nullable: true })
   @Index('UQ_user_username', { where: '"deleted_at" IS NULL', unique: true })
