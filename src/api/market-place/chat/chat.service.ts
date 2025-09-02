@@ -11,15 +11,12 @@ import {
 } from '@/utils/transformers/transform-dto';
 import {
   ForbiddenException,
-  Inject,
   Injectable,
-  NotFoundException,
-  forwardRef,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { BidEntity } from '../bid/entities/bid.entity';
-import { ChatGateway } from '../chat/chat.gateway';
 import { ProductEntity } from '../product/entities/product.entity';
 import { ChatListResDto } from './dto/chat-list.res.dto';
 import { ListMessagesReqDto } from './dto/list-messages.req.dto';
@@ -37,8 +34,7 @@ export class ChatService {
     private readonly messageRepo: Repository<MessageEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-    @Inject(forwardRef(() => ChatGateway))
-    private readonly gateway: ChatGateway,
+   
   ) {}
 
   async ensureParticipant(chatRoomId: Uuid, userId: Uuid) {
