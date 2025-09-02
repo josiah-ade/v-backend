@@ -123,28 +123,27 @@ export class ChatGateway
   // }
 
   @SubscribeMessage('user:join')
-async onUserJoin(
-  @ConnectedSocket() socket: Socket,
-  @MessageBody() userId: Uuid,
-) {
-  if (!userId) throw new WsException('User ID is required');
+  async onUserJoin(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() userId: Uuid,
+  ) {
+    if (!userId) throw new WsException('User ID is required');
 
-  socket.data.userId = userId;
-  await socket.join(userId); 
+    socket.data.userId = userId;
+    await socket.join(userId);
 
-  // Track active users
-  this.activeUsers.set(socket.id, userId);
+    // Track active users
+    this.activeUsers.set(socket.id, userId);
 
-  socket.broadcast.emit('user:online', { userId });
+    socket.broadcast.emit('user:online', { userId });
 
-  const currentlyOnline = Array.from(this.activeUsers.values()).filter(
-    (id) => id !== userId,
-  );
-  socket.emit('user:online:existing', currentlyOnline);
+    const currentlyOnline = Array.from(this.activeUsers.values()).filter(
+      (id) => id !== userId,
+    );
+    socket.emit('user:online:existing', currentlyOnline);
 
-  this.logger.log(`User ${userId} joined with socket ${socket.id}`);
-}
-
+    this.logger.log(`User ${userId} joined with socket ${socket.id}`);
+  }
 
   @SubscribeMessage('chat:activeRoom')
   async onActiveRoom(
@@ -157,15 +156,14 @@ async onUserJoin(
     await this.chatService.markRead(chatRoomId, socket.data.userId);
 
     socket.to(chatRoomId).emit('chat:roomSeen', {
-    chatRoomId,
-    userId,
-  });
+      chatRoomId,
+      userId,
+    });
 
-  
-  socket.emit('chat:roomSeen', {
-    chatRoomId,
-    userId,
-  });
+    socket.emit('chat:roomSeen', {
+      chatRoomId,
+      userId,
+    });
 
     this.logger.log(`User ${socket.data.userId} active in room ${chatRoomId}`);
   }
@@ -242,7 +240,19 @@ async onUserJoin(
         this.logger.log(`Auto-joined user ${userId} to room ${dto.chatRoomId}`);
       }
 
-      const message = await this.chatService.sendMessage(userId, dto);
+      const { message, recipients } = await this.chatService.sendMessage(
+        userId,
+        dto,
+      );
+
+      for (const recipient of recipients) {
+        const isActive = this.isUserInRoom(dto.chatRoomId, recipient.id);
+        if (isActive) {
+          // If recipient is active, mark as read
+          await this.chatService.markMessageAsRead(message.id as Uuid);
+          message.isRead = true;
+        }
+      }
 
       const { isMine, ...rest } = message;
       socket.to(dto.chatRoomId).emit('chat:new', rest);
@@ -250,6 +260,7 @@ async onUserJoin(
 
       // Send acknowledgment back to sender
       socket.emit('chat:sent', { messageId: message.id, success: true });
+
       if (message.isRead) {
         socket.emit('chat:seen', {
           messageId: message.id,

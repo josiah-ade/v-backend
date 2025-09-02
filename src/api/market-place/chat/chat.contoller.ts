@@ -43,15 +43,15 @@ export class ChatController {
     return this.chatService.listMessages(chatRoomId, userId, reqDto);
   }
 
-  @Post(':id/messages')
-  @ApiAuth({
-    type: MessageResDto,
-    summary: 'Send message in chat',
-  })
-  async sendMessage(
-    @Body() dto: SendMessageDto,
-    @CurrentUser('id') senderId: Uuid,
-  ): Promise<MessageResDto> {
-    return this.chatService.sendMessage(senderId, dto);
-  }
+  // @Post(':id/messages')
+  // @ApiAuth({
+  //   type: MessageResDto,
+  //   summary: 'Send message in chat',
+  // })
+  // async sendMessage(
+  //   @Body() dto: SendMessageDto,
+  //   @CurrentUser('id') senderId: Uuid,
+  // ): Promise<MessageResDto> {
+  //   return this.chatService.sendMessage(senderId, dto);
+  // }
 }

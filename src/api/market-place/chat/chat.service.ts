@@ -167,12 +167,49 @@ export class ChatService {
     );
   }
 
+  // async sendMessage(
+  //   senderId: Uuid,
+  //   dto: SendMessageDto,
+  // ): Promise<{ message: MessageResDto; recipients: UserEntity[] }> {
+  //   await this.ensureParticipant(dto.chatRoomId, senderId);
+
+  //   if (!senderId) {
+  //     throw new Error('Sender ID is required');
+  //   }
+
+  //   const message = this.messageRepo.create({
+  //     chatRoomId: dto.chatRoomId,
+  //     senderId,
+  //     content: dto.content,
+  //     isRead: false,
+  //     createdBy: SYSTEM_USER_ID,
+  //     updatedBy: SYSTEM_USER_ID,
+  //   });
+
+  //   const saved = await this.messageRepo.save(message);
+
+  //   const participants = await this.getParticipants(dto.chatRoomId);
+  //   const recipients = participants.filter((p) => p.id !== senderId);
+
+  //   await this.chatRoomRepo.update(dto.chatRoomId, {
+  //     lastMessage: message,
+  //   });
+
+  //   const savedAddition = {
+  //     ...saved,
+  //     isMine: saved.senderId === senderId,
+  //   };
+
+  //   return {
+  //     message: transformSingleDto(MessageResDto, savedAddition),
+  //     recipients,
+  //   };
+  // }
+
   async sendMessage(
     senderId: Uuid,
     dto: SendMessageDto,
-  ): Promise<MessageResDto> {
-    console.log('SendMessage called with:', { senderId, dto });
-
+  ): Promise<{ message: MessageResDto; recipients: UserEntity[] }> {
     await this.ensureParticipant(dto.chatRoomId, senderId);
 
     if (!senderId) {
@@ -193,24 +230,19 @@ export class ChatService {
     const participants = await this.getParticipants(dto.chatRoomId);
     const recipients = participants.filter((p) => p.id !== senderId);
 
-    for (const recipient of recipients) {
-      const isActive = this.gateway.isUserInRoom(dto.chatRoomId, recipient.id);
-      if (isActive) {
-        await this.messageRepo.update(saved.id, { isRead: true });
-        saved.isRead = true;
-      }
-    }
+    await this.chatRoomRepo.update(dto.chatRoomId, { lastMessage: saved });
 
-    await this.chatRoomRepo.update(dto.chatRoomId, {
-      lastMessage: message,
-    });
-
-    const savedAddition = {
+    const messageDto = transformSingleDto(MessageResDto, {
       ...saved,
       isMine: saved.senderId === senderId,
-    };
+    });
 
-    return transformSingleDto(MessageResDto, savedAddition);
+    return { message: messageDto, recipients };
+  }
+
+  async markMessageAsRead(messageId: Uuid): Promise<MessageEntity> {
+    await this.messageRepo.update(messageId, { isRead: true });
+    return this.messageRepo.findOne({ where: { id: messageId } });
   }
 
   async markRead(chatRoomId: Uuid, userId: Uuid) {

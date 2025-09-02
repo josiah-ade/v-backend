@@ -65,8 +65,8 @@
 //   deletedAt!: Date | null;
 // }
 
-import { type UserEntity } from '@/api/user/entities/user.entity'; // ✅ type-only
-import { type ProductEntity } from './product.entity';            // ✅ type-only
+import { type UserEntity } from '@/api/user/entities/user.entity'; 
+import { type ProductEntity } from './product.entity';            
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
