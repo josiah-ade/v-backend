@@ -97,13 +97,13 @@ export class ChatRoomEntity extends AbstractEntity {
   product!: Relation<ProductEntity>;
 
   @ManyToOne(
-    () => require('@/api/user/entities/user.entity').UserEntity, 
+    () => require('../../../user/entities/user.entity').UserEntity, 
   )
   @JoinColumn({ name: 'owner_id' })
   owner!: UserEntity;
 
   @ManyToOne(
-    () => require('@/api/user/entities/user.entity').UserEntity, 
+    () => require('../../../user/entities/user.entity').UserEntity, 
   )
   @JoinColumn({ name: 'bidder_id' })
   bidder!: UserEntity;

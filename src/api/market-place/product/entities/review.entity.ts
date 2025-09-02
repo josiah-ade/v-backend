@@ -94,7 +94,7 @@ export class ReviewEntity extends AbstractEntity {
   userId!: Uuid;
 
   @ManyToOne(
-    () => require('@/api/user/entities/user.entity').UserEntity, // ✅ runtime safe
+    () => require('../../../user/entities/user.entity').UserEntity, 
     (user: UserEntity) => user.reviews,
     { onDelete: 'CASCADE' },
   )
@@ -109,7 +109,7 @@ export class ReviewEntity extends AbstractEntity {
   productId!: Uuid;
 
   @ManyToOne(
-    () => require('./product.entity').ProductEntity, // ✅ runtime safe
+    () => require('./product.entity').ProductEntity,
     (product: ProductEntity) => product.reviews,
     { onDelete: 'CASCADE' },
   )
@@ -118,7 +118,7 @@ export class ReviewEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_review_product_id',
   })
-  product!: ProductEntity; // ✅ only type usage here
+  product!: ProductEntity; 
 
   @Column({ name: 'store_id', type: 'uuid' })
   storeId!: Uuid;
