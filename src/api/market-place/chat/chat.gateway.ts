@@ -77,7 +77,7 @@ export class ChatGateway
     }
   }
 
-  // Disconnections
+  // Disconnectionsas
   async handleDisconnect(client: Socket) {
     try {
       const userId = this.activeUsers.get(client.id);
