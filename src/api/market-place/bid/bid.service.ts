@@ -14,6 +14,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatGateway } from '../chat/chat.gateway';
+import { ChatService } from '../chat/chat.service';
 import { ChatRoomEntity } from '../chat/entities/chat.entity';
 import { MessageEntity, MessageType } from '../chat/entities/message.entity';
 import { ProductEntity } from '../product/entities/product.entity';
@@ -40,6 +41,8 @@ export class BidService {
 
     @InjectRepository(MessageEntity)
     private readonly messageRepo: Repository<MessageEntity>,
+
+    private readonly chatService: ChatService,
 
     private readonly chatGateway: ChatGateway,
   ) {}
@@ -109,11 +112,10 @@ export class BidService {
     const message = this.messageRepo.create({
       chatRoom,
       sender: user,
-      type:MessageType.BID,
+      type: MessageType.BID,
       bidAmount: dto.amount,
       content:
-        dto.message ||
-        `Hey, can I get this for ${formatNaira(dto.amount)}?`,
+        dto.message || `Hey, can I get this for ${formatNaira(dto.amount)}?`,
       image: product.image,
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
@@ -124,6 +126,17 @@ export class BidService {
     await this.chatRepo.save(chatRoom);
 
     // Notify product owner
+    const chatListItem = await this.chatService.getChatListItem(
+      chatRoom.id,
+      product.user.id,
+    );
+
+    await this.chatGateway.notifyUser(
+      product.user.id,
+      'chat-list:new',
+      chatListItem,
+    );
+
     await this.chatGateway.notifyUser(product.user.id, 'bid:new', {
       productId: product.id,
       bidAmount: Number(dto.amount),

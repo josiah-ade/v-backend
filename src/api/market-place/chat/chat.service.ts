@@ -12,7 +12,7 @@ import {
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
@@ -24,6 +24,7 @@ import { MessageResDto } from './dto/message-res.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatRoomEntity } from './entities/chat.entity';
 import { MessageEntity } from './entities/message.entity';
+import {ChatListRaw} from './helpers/chat-interface';
 
 @Injectable()
 export class ChatService {
@@ -34,7 +35,6 @@ export class ChatService {
     private readonly messageRepo: Repository<MessageEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-   
   ) {}
 
   async ensureParticipant(chatRoomId: Uuid, userId: Uuid) {
@@ -68,12 +68,127 @@ export class ChatService {
     return [chatRoom.owner, chatRoom.bidder];
   }
 
-  async listChats(
-    userId: Uuid,
-    reqDto: ListMessagesReqDto,
-  ): Promise<OffsetPaginatedDto<ChatListResDto>> {
-    if (!userId) throw new ValidationException(ErrorCode.E002);
+ async listChats(
+  userId: Uuid,
+  reqDto: ListMessagesReqDto,
+): Promise<OffsetPaginatedDto<ChatListResDto>> {
+  if (!userId) throw new ValidationException(ErrorCode.E002);
 
+  const query = this.chatRoomRepo
+    .createQueryBuilder('chat_room')
+    .leftJoin(
+      (qb) =>
+        qb
+          .subQuery()
+          .select('b.id', 'id')
+          .addSelect('b.chat_room_id', 'chatRoomId')
+          .addSelect('b.amount', 'amount')
+          .addSelect('b.product_id', 'productId')
+          .from(BidEntity, 'b')
+          .distinctOn(['b.chat_room_id'])
+          .orderBy('b.chat_room_id')
+          .addOrderBy('b.created_at', 'DESC'),
+      'bid',
+      'bid."chatRoomId" = chat_room.id',
+    )
+    .leftJoin(
+      (qb) =>
+        qb
+          .subQuery()
+          .select('m.chat_room_id', 'chatRoomId')
+          .addSelect('COUNT(*)', 'unreadCount')
+          .from(MessageEntity, 'm')
+          .where('m.is_read = false')
+          .andWhere('m.sender_id != :userId', { userId })
+          .groupBy('m.chat_room_id'),
+      'unread',
+      'unread."chatRoomId" = chat_room.id',
+    )
+    .leftJoin(ProductEntity, 'product', 'product.id = bid."productId"')
+    .leftJoin('chat_room.owner', 'owner')
+    .leftJoin('chat_room.bidder', 'bidder')
+    .leftJoin('chat_room.lastMessage', 'lastMessage')
+    .select([
+      'chat_room.id AS "chatRoomId"',
+      'bid.id AS "bidId"',
+      'bid.amount AS "amount"',
+      'product.id AS "productId"',
+      'product.title AS "productName"',
+      'owner.id AS "ownerId"',
+      'owner.username AS "ownerUsername"',
+      'owner.lastSeen AS "ownerLastSeen"',
+      'bidder.id AS "bidderId"',
+      'bidder.username AS "bidderUsername"',
+      'bidder.lastSeen AS "bidderLastSeen"',
+      'lastMessage.content AS "lastMessage"',
+      'lastMessage.createdAt AS "lastMessageCreatedAt"',
+      'COALESCE(unread."unreadCount", 0) AS "unreadCount"',
+    ])
+    .where('chat_room.owner_id = :userId OR chat_room.bidder_id = :userId', {
+      userId,
+    })
+    .orderBy('lastMessage.createdAt', 'DESC', 'NULLS LAST');
+
+  const [items, metaDto] = await paginateJoin(query, reqDto, {
+    skipCount: false,
+    takeAll: false,
+  });
+
+  console.log(items)
+
+  return new OffsetPaginatedDto(transformDto(ChatListResDto, items), metaDto);
+}
+
+  // async getChatListItem(
+  //   chatRoomId: Uuid,
+  //   userId: Uuid,
+  // ): Promise<ChatListResDto> {
+  //   const query = this.chatRoomRepo
+  //     .createQueryBuilder('chat_room')
+  //     .leftJoin(
+  //       (qb) =>
+  //         qb
+  //           .subQuery()
+  //           .select('b.id', 'id')
+  //           .addSelect('b.chat_room_id', 'chatRoomId')
+  //           .addSelect('b.amount', 'amount')
+  //           .addSelect('b.product_id', 'productId')
+  //           .from(BidEntity, 'b')
+  //           .distinctOn(['b.chat_room_id'])
+  //           .orderBy('b.chat_room_id')
+  //           .addOrderBy('b.created_at', 'DESC'),
+  //       'bid',
+  //       'bid."chatRoomId" = chat_room.id',
+  //     )
+  //     .leftJoin(ProductEntity, 'product', 'product.id = bid."productId"')
+  //     .leftJoin('chat_room.owner', 'owner')
+  //     .leftJoin('chat_room.bidder', 'bidder')
+  //     .leftJoin('chat_room.lastMessage', 'lastMessage')
+  //     .select([
+  //       'chat_room.id AS "chatRoomId"',
+  //       'bid.id AS "bidId"',
+  //       'bid.amount AS "amount"',
+  //       'product.id AS "productId"',
+  //       'product.title AS "productName"',
+  //       'owner.id AS "ownerId"',
+  //       'owner.username AS "ownerUsername"',
+  //       'owner.lastSeen AS "ownerLastSeen"',
+  //       'bidder.id AS "bidderId"',
+  //       'bidder.username AS "bidderUsername"',
+  //       'bidder.lastSeen AS "bidderLastSeen"',
+  //       'lastMessage.content AS "lastMessage"',
+  //       'lastMessage.createdAt AS "lastMessageCreatedAt"',
+  //     ])
+  //     .where('chat_room.id = :chatRoomId', { chatRoomId });
+
+  //   const item = await query.getRawOne();
+  //   return transformSingleDto(ChatListResDto, item);
+  // }
+
+  async getChatListItem(
+    chatRoomId: Uuid,
+    userId: Uuid,
+  ): Promise<ChatListResDto> {
     const query = this.chatRoomRepo
       .createQueryBuilder('chat_room')
       .leftJoin(
@@ -91,10 +206,31 @@ export class ChatService {
         'bid',
         'bid."chatRoomId" = chat_room.id',
       )
+      .leftJoin(
+      (qb) =>
+        qb
+          .subQuery()
+          .select('m.chat_room_id', 'chatRoomId')
+          .addSelect('COUNT(*)', 'unreadCount')
+          .from(MessageEntity, 'm')
+          .where('m.is_read = false')
+          .andWhere('m.sender_id != :userId', { userId })
+          .groupBy('m.chat_room_id'),
+      'unread',
+      'unread."chatRoomId" = chat_room.id',
+    )
       .leftJoin(ProductEntity, 'product', 'product.id = bid."productId"')
       .leftJoin('chat_room.owner', 'owner')
       .leftJoin('chat_room.bidder', 'bidder')
       .leftJoin('chat_room.lastMessage', 'lastMessage')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)')
+          .from(MessageEntity, 'm')
+          .where('m.chatRoomId = chat_room.id')
+          .andWhere('m.isRead = false')
+          .andWhere('m.senderId != :userId', { userId });
+      }, 'unreadCount')
       .select([
         'chat_room.id AS "chatRoomId"',
         'bid.id AS "bidId"',
@@ -109,18 +245,14 @@ export class ChatService {
         'bidder.lastSeen AS "bidderLastSeen"',
         'lastMessage.content AS "lastMessage"',
         'lastMessage.createdAt AS "lastMessageCreatedAt"',
+        'COALESCE(unread."unreadCount", 0) AS "unreadCount"',
       ])
-      .where('chat_room.owner_id = :userId OR chat_room.bidder_id = :userId', {
-        userId,
-      })
-      .orderBy('lastMessage.createdAt', 'DESC', 'NULLS LAST');
+      .where('chat_room.id = :chatRoomId', { chatRoomId })
+      .setParameter('userId', userId);
 
-    const [items, metaDto] = await paginateJoin(query, reqDto, {
-      skipCount: false,
-      takeAll: false,
-    });
-
-    return new OffsetPaginatedDto(transformDto(ChatListResDto, items), metaDto);
+    const item = await query.getRawOne();
+   
+    return transformSingleDto(ChatListResDto, item);
   }
 
   async listMessages(
@@ -216,7 +348,6 @@ export class ChatService {
       chatRoomId: dto.chatRoomId,
       senderId,
       content: dto.content,
-      isRead: false,
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });

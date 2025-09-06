@@ -1,4 +1,3 @@
-import { NumberField, StringField } from '@/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -19,7 +18,7 @@ export class ChatListResDto {
   productName: string;
 
   @Expose()
-  ownerLastSeen:string;
+  ownerLastSeen: string;
 
   @Expose()
   ownerId: string;
@@ -27,14 +26,17 @@ export class ChatListResDto {
   @Expose()
   ownerUsername: string;
 
-@Expose()
-  bidderLastSeen:string;
+  @Expose()
+  bidderLastSeen: string;
 
   @Expose()
   bidderId: string;
 
   @Expose()
   bidderUsername: string;
+
+  @Expose()
+  unreadCount: number;
 
   @Expose()
   lastMessage?: string | null;

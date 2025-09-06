@@ -89,6 +89,10 @@ export class ChatGateway
           userId,
           lastSeen: new Date().toISOString(),
         });
+        this.server.emit(
+          'user:online:all',
+          Array.from(this.activeUsers.values()),
+        );
       } else {
         this.logger.log(`Client disconnected: ${client.id}`);
       }
@@ -96,31 +100,6 @@ export class ChatGateway
       this.logger.error('Error handling disconnect:', error);
     }
   }
-
-  // @SubscribeMessage('user:join')
-  // async onUserJoin(
-  //   @ConnectedSocket() socket: Socket,
-  //   @MessageBody() userId: Uuid,
-  // ) {
-  //   try {
-  //     if (!userId) {
-  //       throw new WsException('User ID is required');
-  //     }
-
-  //     socket.data.userId = userId;
-  //     await socket.join(userId);
-
-  //     // keep track of active users
-  //     this.activeUsers.set(socket.id, userId);
-
-  //     this.server.emit('user:online', { userId });
-
-  //     this.logger.log(`User ${userId} joined with socket ${socket.id}`);
-  //   } catch (error) {
-  //     this.logger.error('Error in user join:', error);
-  //     throw new WsException('Failed to join user session');
-  //   }
-  // }
 
   @SubscribeMessage('user:join')
   async onUserJoin(
@@ -135,12 +114,14 @@ export class ChatGateway
     // Track active users
     this.activeUsers.set(socket.id, userId);
 
-    socket.broadcast.emit('user:online', { userId });
+    // socket.broadcast.emit('user:online', { userId });
 
-    const currentlyOnline = Array.from(this.activeUsers.values()).filter(
-      (id) => id !== userId,
-    );
-    socket.emit('user:online:existing', currentlyOnline);
+    // const currentlyOnline = Array.from(this.activeUsers.values()).filter(
+    //   (id) => id !== userId,
+    // );
+    // socket.emit('user:online:existing', currentlyOnline);
+
+    this.server.emit('user:online:all', Array.from(this.activeUsers.values()));
 
     this.logger.log(`User ${userId} joined with socket ${socket.id}`);
   }
@@ -164,7 +145,7 @@ export class ChatGateway
       chatRoomId,
       userId,
     });
-
+    this.server.emit('user:online:all', Array.from(this.activeUsers.values()));
     this.logger.log(`User ${socket.data.userId} active in room ${chatRoomId}`);
   }
 
@@ -189,6 +170,10 @@ export class ChatGateway
       await this.chatService.ensureParticipant(dto.chatRoomId, userId);
       await socket.join(dto.chatRoomId);
       await this.chatService.markRead(dto.chatRoomId, userId);
+      this.server.emit(
+        'user:online:all',
+        Array.from(this.activeUsers.values()),
+      );
 
       this.logger.log(`User ${userId} joined chat room ${dto.chatRoomId}`);
     } catch (error) {
@@ -257,6 +242,10 @@ export class ChatGateway
       const { isMine, ...rest } = message;
       socket.to(dto.chatRoomId).emit('chat:new', rest);
       socket.emit('chat:new', message);
+      this.server.emit('chat:notification', {
+        chatRoomId: dto.chatRoomId,
+        count: 0,
+      });
 
       // Send acknowledgment back to sender
       socket.emit('chat:sent', { messageId: message.id, success: true });
@@ -267,6 +256,10 @@ export class ChatGateway
           chatRoomId: dto.chatRoomId,
         });
       }
+      this.server.emit(
+        'user:online:all',
+        Array.from(this.activeUsers.values()),
+      );
     } catch (error) {
       this.logger.error('Error sending message:', error);
       this.logger.error('Error stack:', error.stack);
