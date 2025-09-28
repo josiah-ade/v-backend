@@ -44,7 +44,8 @@ export abstract class AbstractEntity extends BaseEntity {
   updatedBy: string;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
-    return plainToInstance(dtoClass, this)
+    return plainToInstance(dtoClass, this);
+  }
 
   static useDataSource(dataSource: DataSource) {
     BaseEntity.useDataSource.call(this, dataSource);
