@@ -44,7 +44,7 @@ export abstract class AbstractEntity extends BaseEntity {
   updatedBy: string;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
-    return plainToInstance(dtoClass, this);
+    return plainToInstance(dtoClass, this, { excludeExtraneousValues: true,});
   }
 
   static useDataSource(dataSource: DataSource) {
