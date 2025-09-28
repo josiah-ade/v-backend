@@ -6,7 +6,7 @@ import {
   DataSource,
   UpdateDateColumn,
 } from 'typeorm';
-import { getOrder, Order } from '../decorators/order.decorator';
+import { Order, getOrder } from '../decorators/order.decorator';
 
 export abstract class AbstractEntity extends BaseEntity {
   @Order(9999)
@@ -44,7 +44,7 @@ export abstract class AbstractEntity extends BaseEntity {
   updatedBy: string;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
-    return plainToInstance(dtoClass, this, { excludeExtraneousValues: true,});
+    return plainToInstance(dtoClass, this, { excludeExtraneousValues: true });
   }
 
   static useDataSource(dataSource: DataSource) {

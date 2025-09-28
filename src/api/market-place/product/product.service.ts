@@ -91,8 +91,8 @@ export class ProductService {
   }
 
   async getProduct(id: Uuid, userId: Uuid): Promise<GetProductResDto> {
-    // if (!userId) throw new ValidationException(ErrorCode.E002);
-    // if (!id) throw new ValidationException(ErrorCode.I004);
+    if (!userId) throw new ValidationException(ErrorCode.E002);
+    if (!id) throw new ValidationException(ErrorCode.I004);
 
     // const product = await this.productRepository.findOneByOrFail({ id });
 
@@ -107,7 +107,6 @@ export class ProductService {
 
     if (!product) throw new ValidationException(ErrorCode.I004);
 
-    console.log(product.toDto(GetProductResDto));
     return product.toDto(GetProductResDto);
   }
 
