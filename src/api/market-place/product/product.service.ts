@@ -107,9 +107,28 @@ export class ProductService {
 
     if (!product) throw new ValidationException(ErrorCode.I004);
 
-    console.log('Raw product:', product); // Log the raw entity
-    console.log('Transformed DTO:', product.toDto(GetProductResDto));
-    return product.toDto(GetProductResDto);
+    const dto: GetProductResDto = {
+    id: product.id,
+    userId: product.userId,
+    image: product.image,
+    title: product.title,
+    description: product.description,
+    styleType: product.styleType,
+    fabricType: product.fabricType,
+    clotheFit: product.clotheFit,
+    condition: product.condition,
+    color: product.color,
+    size: product.size,
+    price: Number(product.price), // ensure number
+
+    // extra user fields
+    username: product.user?.username,
+    userImage: product.user?.image ?? '',
+    lastSeen: product.user?.lastSeen,
+    totalReviews: (product.user as any)?.totalReviews ?? 0,
+  };
+
+  return dto;
   }
 
   async uploadProduct(
