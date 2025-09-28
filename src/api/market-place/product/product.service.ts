@@ -107,7 +107,8 @@ export class ProductService {
 
     if (!product) throw new ValidationException(ErrorCode.I004);
 
-    console.log(product.toDto(GetProductResDto));
+    console.log('Raw product:', product); // Log the raw entity
+    console.log('Transformed DTO:', product.toDto(GetProductResDto));
     return product.toDto(GetProductResDto);
   }
 
