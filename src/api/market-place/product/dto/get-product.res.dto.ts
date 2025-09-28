@@ -116,20 +116,20 @@ export class GetProductResDto {
   // --- Extra user fields ---
   @StringField()
   @Expose()
-  @Transform(({ obj }) => obj.user?.username)
+  @Transform(({ obj }) => obj.username) // Remove .user
   username: string;
 
   @StringField({ nullable: true })
   @Expose()
-  @Transform(({ obj }) => obj.user?.image)
+  @Transform(({ obj }) => obj.userImage) // Remove .user
   userImage: string;
 
   @Expose()
-  @Transform(({ obj }) => obj.user?.lastSeen)
+  @Transform(({ obj }) => obj.lastSeen) // Remove .user
   lastSeen: Date;
 
   @NumberField()
   @Expose()
-  @Transform(({ obj }) => obj.user?.totalReviews ?? 0)
+  @Transform(({ obj }) => obj.totalReviews ?? 0)
   totalReviews: number;
 }

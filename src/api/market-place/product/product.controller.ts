@@ -65,7 +65,6 @@ export class ProductController {
     @Param('id') id: Uuid,
     @CurrentUser('id') userId: Uuid,
   ): Promise<GetProductResDto> {
-    console.log(this.productService.getProduct(id, userId))
     return this.productService.getProduct(id, userId);
   }
 
