@@ -91,10 +91,21 @@ export class ProductService {
   }
 
   async getProduct(id: Uuid, userId: Uuid): Promise<GetProductResDto> {
-    if (!userId) throw new ValidationException(ErrorCode.E002);
-    if (!id) throw new ValidationException(ErrorCode.I004);
+    // if (!userId) throw new ValidationException(ErrorCode.E002);
+    // if (!id) throw new ValidationException(ErrorCode.I004);
 
-    const product = await this.productRepository.findOneByOrFail({ id });
+    // const product = await this.productRepository.findOneByOrFail({ id });
+
+    // return product.toDto(GetProductResDto);
+
+    const product = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.user', 'user')
+      .loadRelationCountAndMap('user.totalReviews', 'user.reviews')
+      .where('product.id = :id', { id })
+      .getOne();
+
+    if (!product) throw new ValidationException(ErrorCode.I004);
 
     return product.toDto(GetProductResDto);
   }
