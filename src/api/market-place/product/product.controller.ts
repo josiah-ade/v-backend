@@ -61,6 +61,7 @@ export class ProductController {
     type: GetProductResDto,
     summary: 'Get Single Product Detail',
   })
+  @UseInterceptors()
   async getProduct(
     @Param('id') id: Uuid,
     @CurrentUser('id') userId: Uuid,
