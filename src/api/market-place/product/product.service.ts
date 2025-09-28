@@ -107,6 +107,8 @@ export class ProductService {
 
     if (!product) throw new ValidationException(ErrorCode.I004);
 
+    console.log(product.user);
+     console.log(product);
     return product.toDto(GetProductResDto);
   }
 

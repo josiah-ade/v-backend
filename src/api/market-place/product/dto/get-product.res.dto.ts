@@ -122,11 +122,11 @@ export class GetProductResDto {
   @StringField({ nullable: true })
   @Expose()
   @Transform(({ obj }) => obj.user?.image)
-  userImage?: string;
+  userImage: string;
 
   @Expose()
   @Transform(({ obj }) => obj.user?.lastSeen)
-  lastSeen?: Date;
+  lastSeen: Date;
 
   @NumberField()
   @Expose()
