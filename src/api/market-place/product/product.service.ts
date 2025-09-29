@@ -52,6 +52,44 @@ export class ProductService {
     return new OffsetPaginatedDto(transformDto(ProductsResDto, items), metaDto);
   }
 
+  async getRelatedProducts(
+    productId: Uuid,
+    userId: Uuid,
+  ): Promise<{
+    sameUserProducts: ProductsResDto[];
+    similarProducts: ProductsResDto[];
+  }> {
+    if (!userId) throw new ValidationException(ErrorCode.E002);
+    if (!productId) throw new ValidationException(ErrorCode.I004);
+
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+    if (!product) throw new ValidationException(ErrorCode.I002);
+
+    // 1. Get products from the same user (exclude current product)
+    const sameUserProducts = await this.productRepository
+      .createQueryBuilder('p')
+      .where('p.user_id = :userId', { userId: product.userId })
+      .andWhere('p.id != :productId', { productId })
+      .andWhere('p.status = :status', { status: ProductStatus.LISTED })
+      .take(10)
+      .getMany();
+
+    // 2. Get products similar to the current product
+    const similarProducts = await this.productRepository
+      .createQueryBuilder('p')
+      .where('p.id != :productId', { productId })
+      .andWhere('p.status = :status', { status: ProductStatus.LISTED })
+      .take(10)
+      .getMany();
+
+    return {
+      sameUserProducts: transformDto(ProductsResDto, sameUserProducts),
+      similarProducts: transformDto(ProductsResDto, similarProducts),
+    };
+  }
+
   async getProducts(
     path: IGetProductsPath,
     reqDto: ListProductsReqDto,
@@ -94,10 +132,6 @@ export class ProductService {
     if (!userId) throw new ValidationException(ErrorCode.E002);
     if (!id) throw new ValidationException(ErrorCode.I004);
 
-    // const product = await this.productRepository.findOneByOrFail({ id });
-
-    // return product.toDto(GetProductResDto);
-
     const product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.user', 'user')
@@ -105,30 +139,30 @@ export class ProductService {
       .where('product.id = :id', { id })
       .getOne();
 
-    if (!product) throw new ValidationException(ErrorCode.I004);
+    if (!product) throw new ValidationException(ErrorCode.I002);
 
     const dto: GetProductResDto = {
-    id: product.id,
-    userId: product.userId,
-    image: product.image,
-    title: product.title,
-    description: product.description,
-    styleType: product.styleType,
-    fabricType: product.fabricType,
-    clotheFit: product.clotheFit,
-    condition: product.condition,
-    color: product.color,
-    size: product.size,
-    price: Number(product.price), // ensure number
+      id: product.id,
+      userId: product.userId,
+      image: product.image,
+      title: product.title,
+      description: product.description,
+      styleType: product.styleType,
+      fabricType: product.fabricType,
+      clotheFit: product.clotheFit,
+      condition: product.condition,
+      color: product.color,
+      size: product.size,
+      price: Number(product.price),
 
-    // extra user fields
-    username: product.user?.username,
-    userImage: product.user?.image ?? '',
-    lastSeen: product.user?.lastSeen,
-    totalReviews: (product.user as any)?.totalReviews ?? 0,
-  };
+      // extra user fields
+      username: product.user?.username,
+      userImage: product.user?.image ?? '',
+      lastSeen: product.user?.lastSeen,
+      totalReviews: (product.user as any)?.totalReviews ?? 0,
+    };
 
-  return dto;
+    return dto;
   }
 
   async uploadProduct(

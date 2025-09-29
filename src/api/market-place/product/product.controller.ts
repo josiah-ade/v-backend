@@ -44,6 +44,21 @@ export class ProductController {
     return this.productService.getMarketProducts(reqDto, userId);
   }
 
+  @Get('market/related')
+  @ApiAuth({
+    type: ProductsResDto,
+    summary: 'Get Market Related Products',
+  })
+  async getMarketRelatedProducts(
+    @Param('id') productId: Uuid,
+    @CurrentUser('id') userId: Uuid,
+  ): Promise<{
+    sameUserProducts: ProductsResDto[];
+    similarProducts: ProductsResDto[];
+  }> {
+    return this.productService.getRelatedProducts(productId, userId);
+  }
+
   @Get('reviews')
   @ApiAuth({
     type: ReviewsResDto,
