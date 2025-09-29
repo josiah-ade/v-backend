@@ -1,4 +1,5 @@
 import {
+  DateField,
   NumberField,
   StringField,
   UUIDField,
@@ -13,11 +14,11 @@ export class ReviewsResDto {
 
   @StringField()
   @Expose()
-  title: string;
+  userName: string;
 
   @StringField()
   @Expose()
-  userName: string;
+  userImage: string;
 
   @StringField()
   @Expose()
@@ -30,4 +31,8 @@ export class ReviewsResDto {
   @StringField()
   @Expose()
   comment: string;
+
+  @DateField()
+  @Expose()
+  createdAt: Date;
 }

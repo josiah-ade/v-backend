@@ -234,4 +234,34 @@ export class ProductService {
 
     return new OffsetPaginatedDto(transformDto(ReviewsResDto, items), metaDto);
   }
+
+  async getProductReviews(
+    productId: Uuid,
+    reqDto: ListProductsReqDto,
+    userId: Uuid,
+  ): Promise<OffsetPaginatedDto<ReviewsResDto>> {
+    if (!userId) throw new ValidationException(ErrorCode.E002);
+    if (!productId) throw new ValidationException(ErrorCode.I004);
+
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+    if (!product) throw new ValidationException(ErrorCode.I002);
+
+    const query = this.reviewRepository
+      .createQueryBuilder('review')
+      .leftJoin('review.product', 'product')
+      .leftJoin('review.user', 'user')
+      .addSelect('product.id', 'productId')
+      .addSelect('user.username', 'userName')
+      .addSelect('user.image', 'userImage')
+      .where('review.productId = :productId', { productId });
+
+    const [items, metaDto] = await paginateJoin<ReviewEntity>(query, reqDto, {
+      skipCount: false,
+      takeAll: false,
+    });
+
+    return new OffsetPaginatedDto(transformDto(ReviewsResDto, items), metaDto);
+  }
 }

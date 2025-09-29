@@ -71,6 +71,19 @@ export class ProductController {
     return this.productService.getReviews(reqDto, userId);
   }
 
+  @Get('reviews/:id')
+  @ApiAuth({
+    type: ReviewsResDto,
+    summary: 'Get Product Reviews',
+  })
+  async getProductReviews(
+    @Param('id') productId: Uuid,
+    @Query() reqDto: ListProductsReqDto,
+    @CurrentUser('id') userId: Uuid,
+  ): Promise<OffsetPaginatedDto<ReviewsResDto>> {
+    return this.productService.getProductReviews(productId, reqDto, userId);
+  }
+
   @Get('single/:id')
   @ApiAuth({
     type: GetProductResDto,
