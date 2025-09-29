@@ -44,7 +44,7 @@ export class ProductController {
     return this.productService.getMarketProducts(reqDto, userId);
   }
 
-  @Get('market/related')
+  @Get('related/:id')
   @ApiAuth({
     type: ProductsResDto,
     summary: 'Get Market Related Products',
