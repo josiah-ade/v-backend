@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { UploadApiResponse } from 'cloudinary';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { CreateProductReviewReqDto } from './dto/create-product-review.req.dto';
 import { GetProductReqDto } from './dto/create-product.req.dto';
 import { CreateProductRes } from './dto/create-product.res.dto';
 import { GetProductResDto } from './dto/get-product.res.dto';
@@ -263,5 +264,44 @@ export class ProductService {
     });
 
     return new OffsetPaginatedDto(transformDto(ReviewsResDto, items), metaDto);
+  }
+
+  async uploadProductReview(
+    dto: CreateProductReviewReqDto,
+    userId: Uuid,
+  ): Promise<CreateProductRes> {
+    if (!userId) throw new ValidationException(ErrorCode.E002);
+    if (!dto.productId) throw new ValidationException(ErrorCode.I004);
+
+    // check if product exists
+    const product = await this.productRepository.findOne({
+      where: { id: dto.productId },
+    });
+    if (!product) {
+      throw new ValidationException(ErrorCode.I002);
+    }
+
+    // check if user already reviewed (optional)
+    const existingReview = await this.reviewRepository.findOne({
+      where: { productId: dto.productId, userId },
+    });
+    if (existingReview) {
+      throw new ValidationException(ErrorCode.I003);
+    }
+
+    const review = this.reviewRepository.create({
+      productId: dto.productId,
+      storeId: userId,
+      userId,
+      rating: dto.rating,
+      comment: dto.comment,
+    });
+
+    await this.reviewRepository.save(review);
+
+    return plainToInstance(
+      CreateProductRes,
+      buildSuccessMessage('Review added successfully.'),
+    );
   }
 }

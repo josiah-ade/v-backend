@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateProductReviewReqDto } from './dto/create-product-review.req.dto';
 import { GetProductReqDto } from './dto/create-product.req.dto';
 import { CreateProductRes } from './dto/create-product.res.dto';
 import { GetProductResDto } from './dto/get-product.res.dto';
@@ -116,6 +117,18 @@ export class ProductController {
     @CurrentUser('id') userId: Uuid,
   ): Promise<CreateProductRes> {
     return this.productService.uploadProduct(file, reqDto, userId);
+  }
+
+  @Post('review/create')
+  @ApiAuth({
+    type: CreateProductRes,
+    summary: 'Upload New Product Review',
+  })
+  async uploadProductReview(
+    @Body() reqDto: CreateProductReviewReqDto,
+    @CurrentUser('id') userId: Uuid,
+  ): Promise<CreateProductRes> {
+    return this.productService.uploadProductReview(reqDto, userId);
   }
 
   @Get(':path')
