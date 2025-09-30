@@ -295,6 +295,8 @@ export class ProductService {
       userId,
       rating: dto.rating,
       comment: dto.comment,
+       createdBy: SYSTEM_USER_ID,
+        updatedBy: SYSTEM_USER_ID,
     });
 
     await this.reviewRepository.save(review);
