@@ -293,7 +293,7 @@ export class ProductService {
       productId: dto.productId,
       storeId: userId,
       userId,
-      rating: Number(dto.rating),
+      rating: dto.rating,
       comment: dto.comment,
     });
 

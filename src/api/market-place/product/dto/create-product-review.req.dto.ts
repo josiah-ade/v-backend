@@ -8,6 +8,6 @@ export class CreateProductReviewReqDto {
   @StringField()
   comment: string;
 
-  @StringField()
-  rating: string;
+  @NumberField()
+  rating: number;
 }
