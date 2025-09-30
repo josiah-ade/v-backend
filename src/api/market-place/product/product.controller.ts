@@ -85,6 +85,18 @@ export class ProductController {
     return this.productService.getProductReviews(productId, reqDto, userId);
   }
 
+    @Post('review/create')
+  @ApiAuth({
+    type: CreateProductRes,
+    summary: 'Upload New Product Review',
+  })
+  async uploadProductReview(
+    @Body() reqDto: CreateProductReviewReqDto,
+    @CurrentUser('id') userId: Uuid,
+  ): Promise<CreateProductRes> {
+    return this.productService.uploadProductReview(reqDto, userId);
+  }
+
   @Get('single/:id')
   @ApiAuth({
     type: GetProductResDto,
@@ -119,17 +131,7 @@ export class ProductController {
     return this.productService.uploadProduct(file, reqDto, userId);
   }
 
-  @Post('review/create')
-  @ApiAuth({
-    type: CreateProductRes,
-    summary: 'Upload New Product Review',
-  })
-  async uploadProductReview(
-    @Body() reqDto: CreateProductReviewReqDto,
-    @CurrentUser('id') userId: Uuid,
-  ): Promise<CreateProductRes> {
-    return this.productService.uploadProductReview(reqDto, userId);
-  }
+
 
   @Get(':path')
   @ApiAuth({
