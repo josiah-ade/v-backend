@@ -12,7 +12,7 @@ export default defineUserConfig({
   lang: 'en-US',
   title: 'NestJS boilerplate',
   description: 'NestJS boilerplate with best practices',
-  base: '/seamless/',
+  base: '/cv/',
   bundler: viteBundler(),
   markdown: {
     toc: {
@@ -30,7 +30,7 @@ export default defineUserConfig({
     },
   },
   theme: defaultTheme({
-    repo: 'vndevteam/seamless',
+    repo: 'vndevteam/cv',
     docsBranch: 'main',
     docsDir: 'docs',
     locales: {

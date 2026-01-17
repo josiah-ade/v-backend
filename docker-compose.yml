@@ -1,7 +1,7 @@
 services:
-  seamless-api:
-    image: seamless-api
-    container_name: seamless-api
+  cv-api:
+    image: cv-api
+    container_name: cv-api
     restart: always
     build:
       context: .
@@ -11,23 +11,23 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - seamless-network
+      - cv-network
 
   db:
     image: postgres:16
-    container_name: seamless-postgres
+    container_name: cv-postgres
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: seamless
+      POSTGRES_DB: cv
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       TZ: "UTC"
     ports:
       - "25432:5432"
     networks:
-      - seamless-network
+      - cv-network
 
   redis:
     image: redis/redis-stack:latest
@@ -42,7 +42,7 @@ services:
     environment:
       REDIS_ARGS: "--requirepass redispass"
     networks:
-      - seamless-network
+      - cv-network
 
   maildev:
     build:
@@ -52,7 +52,7 @@ services:
       - ${MAIL_CLIENT_PORT}:1080
       - ${MAIL_PORT}:1025
     networks:
-      - seamless-network
+      - cv-network
 
   pgadmin:
     container_name: pgadmin
@@ -67,7 +67,7 @@ services:
       PGADMIN_CONFIG_WTF_CSRF_ENABLED: "False"
       PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
     networks:
-      - seamless-network
+      - cv-network
 
 volumes:
   postgres_data:
@@ -75,5 +75,5 @@ volumes:
   redis_data:
 
 networks:
-  seamless-network:
+  cv-network:
     driver: bridge

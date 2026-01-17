@@ -1,6 +1,6 @@
 # services:
 #   - type: web
-#     name: seamless-api
+#     name: cv-api
 #     env: docker
 #     region: oregon
 #     plan: free
@@ -11,9 +11,9 @@
 #       - key: MODULES_SET
 #         value: monolith
 #       - key: APP_NAME
-#         value: Seamless API
+#         value: Cv API
 #       - key: APP_URL
-#         value: https://seamless-api.onrender.com
+#         value: https://cv-api.onrender.com
 #       - key: APP_PORT
 #         value: 3000
 #       - key: APP_DEBUG
@@ -32,23 +32,23 @@
 #         value: postgres
 #       - key: DATABASE_HOST
 #         fromDatabase:
-#           name: seamless-db
+#           name: cv-db
 #           property: host
 #       - key: DATABASE_PORT
 #         fromDatabase:
-#           name: seamless-db
+#           name: cv-db
 #           property: port
 #       - key: DATABASE_USERNAME
 #         fromDatabase:
-#           name: seamless-db
+#           name: cv-db
 #           property: user
 #       - key: DATABASE_PASSWORD
 #         fromDatabase:
-#           name: seamless-db
+#           name: cv-db
 #           property: password
 #       - key: DATABASE_NAME
 #         fromDatabase:
-#           name: seamless-db
+#           name: cv-db
 #           property: database
 #       - key: DATABASE_LOGGING
 #         value: false
@@ -86,7 +86,7 @@
 #         value: 1d
 
 # databases:
-#   - name: seamless-db
+#   - name: cv-db
 #     region: oregon
 #     plan: free
 #     postgresMajorVersion: 15

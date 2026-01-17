@@ -14,14 +14,6 @@ import {
 } from 'typeorm';
 
 // Import related entities normally
-import { AiTextEntity } from '@/api/ai/entities/ai.text.entity';
-import { AvatarEntity } from '@/api/avatar/entities/avatar.entity';
-import { CreationEntity } from '@/api/creation/entities/creation.entity';
-import { FavouriteEntity } from '@/api/favourite/entities/favourite.entity';
-import { BidEntity } from '@/api/market-place/bid/entities/bid.entity';
-import { MessageEntity } from '@/api/market-place/chat/entities/message.entity';
-import { ProductEntity } from '@/api/market-place/product/entities/product.entity';
-import { ReviewEntity } from '@/api/market-place/product/entities/review.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { SessionEntity } from './session.entity';
 
@@ -62,33 +54,8 @@ export class UserEntity extends AbstractEntity {
   })
   deletedAt!: Date;
 
-  // --- Relations ---
-  @OneToMany(() => ReviewEntity, (review) => review.user)
-  reviews!: Relation<ReviewEntity[]>;
-
   @OneToMany(() => PostEntity, (post) => post.user)
   posts!: Relation<PostEntity[]>;
-
-  @OneToMany(() => FavouriteEntity, (fav) => fav.user)
-  favourites!: Relation<FavouriteEntity[]>;
-
-  @OneToMany(() => AvatarEntity, (avatar) => avatar.user)
-  avatars!: Relation<AvatarEntity[]>;
-
-  @OneToMany(() => AiTextEntity, (ai) => ai.user)
-  ai_text!: Relation<AiTextEntity[]>;
-
-  @OneToMany(() => CreationEntity, (creation) => creation.user)
-  creations!: Relation<CreationEntity[]>;
-
-  @OneToMany(() => ProductEntity, (product) => product.user)
-  products!: Relation<ProductEntity[]>;
-
-  @OneToMany(() => BidEntity, (bid) => bid.user)
-  bids!: Relation<BidEntity[]>;
-
-  @OneToMany(() => MessageEntity, (msg) => msg.sender)
-  messages!: Relation<MessageEntity[]>;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: Relation<SessionEntity[]>;
