@@ -20,14 +20,13 @@ import { Queue } from 'bullmq';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import ms from 'ms';
 import { Repository } from 'typeorm';
 import { SessionEntity } from '../user/entities/session.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
-import { RefreshReqDto } from './dto/refresh.req.dto';
 import { RefreshResDto } from './dto/refresh.res.dto';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { RegisterResDto } from './dto/register.res.dto';
@@ -73,7 +72,7 @@ export class AuthService {
       user && (await verifyPassword(password, user.password));
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException();
+      throw new ValidationException(ErrorCode.E004);
     }
 
     await this.userRepository.update(user.id, { lastSeen: new Date() });
@@ -93,6 +92,8 @@ export class AuthService {
 
     const token = await this.createToken({
       id: user.id,
+      email: user.email,
+      fullName: user.fullName,
       sessionId: session.id,
       hash,
     });
@@ -131,10 +132,10 @@ export class AuthService {
 
     // Register user
     const user = new UserEntity({
-      username:dto.username,
+      fullName: dto.fullName,
       email: dto.email,
       password: dto.password,
-      lastSeen: new Date(), 
+      lastSeen: new Date(),
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });
@@ -177,6 +178,8 @@ export class AuthService {
 
     const regToken = await this.createToken({
       id: user.id,
+      email: user.email,
+      fullName: user.fullName,
       sessionId: session.id,
       hash,
     });
@@ -204,6 +207,51 @@ export class AuthService {
     });
   }
 
+  async refreshToken(req: Request, res: Response): Promise<RefreshResDto> {
+    const refreshToken = req.cookies?.refreshToken;
+    
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+
+    const { sessionId, hash } = this.verifyRefreshToken(refreshToken);
+    const session = await SessionEntity.findOneBy({ id: sessionId });
+
+    if (!session || session.hash !== hash) {
+      throw new UnauthorizedException('Invalid session');
+    }
+
+    const user = await this.userRepository.findOneOrFail({
+      where: { id: session.userId },
+      select: ['id', 'email', 'fullName'],
+    });
+
+    const token = await this.createToken({
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      sessionId: session.id,
+      hash: session.hash,
+    });
+
+    const refreshExpiresIn = this.configService.getOrThrow(
+      'auth.refreshExpires',
+      { infer: true },
+    );
+
+    this.authCookieService.setRefreshTokenCookie(
+      res,
+      token.refreshToken,
+      ms(refreshExpiresIn),
+    );
+
+    return plainToInstance(RefreshResDto, {
+      userId: user.id,
+      accessToken: token.accessToken,
+      tokenExpires: token.tokenExpires,
+    });
+  }
+
   async logout(userToken: JwtPayloadType): Promise<void> {
     await this.cacheManager.store.set<boolean>(
       createCacheKey(CacheKey.SESSION_BLACKLIST, userToken.sessionId),
@@ -211,33 +259,6 @@ export class AuthService {
       userToken.exp * 1000 - Date.now(),
     );
     await SessionEntity.delete(userToken.sessionId);
-  }
-
-  async refreshToken(dto: RefreshReqDto): Promise<RefreshResDto> {
-    const { sessionId, hash } = this.verifyRefreshToken(dto.refreshToken);
-    const session = await SessionEntity.findOneBy({ id: sessionId });
-
-    if (!session || session.hash !== hash) {
-      throw new UnauthorizedException();
-    }
-
-    const user = await this.userRepository.findOneOrFail({
-      where: { id: session.userId },
-      select: ['id'],
-    });
-
-    const newHash = crypto
-      .createHash('sha256')
-      .update(randomStringGenerator())
-      .digest('hex');
-
-    SessionEntity.update(session.id, { hash: newHash });
-
-    return await this.createToken({
-      id: user.id,
-      sessionId: session.id,
-      hash: newHash,
-    });
   }
 
   async verifyAccessToken(token: string): Promise<JwtPayloadType> {
@@ -292,6 +313,8 @@ export class AuthService {
 
   private async createToken(data: {
     id: string;
+    email: string;
+    fullName: string;
     sessionId: string;
     hash: string;
   }): Promise<Token> {
@@ -303,7 +326,9 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       await this.jwtService.signAsync(
         {
-          id: data.id,
+          userId: data.id,
+          email: data.email,
+          fullName: data.fullName,
           role: '', // TODO: add role
           sessionId: data.sessionId,
         },

@@ -2,7 +2,7 @@ import { EmailField, PasswordField, StringField } from '@/decorators/field.decor
 
 export class RegisterReqDto {
   @StringField()
-  username!: string;
+  fullName!: string;
 
   @EmailField()
   email!: string;

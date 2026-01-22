@@ -37,14 +37,14 @@ MODULES_SET=monolith
 
 ##== Application
 APP_NAME="NestJS API"
-APP_URL=http://localhost:3000
-APP_PORT=3000
+APP_URL=http://localhost:3001
+APP_PORT=3001
 APP_DEBUG=false
 API_PREFIX=api
 APP_FALLBACK_LANGUAGE=en
 APP_LOG_LEVEL=debug
 APP_LOG_SERVICE=console
-APP_CORS_ORIGIN=http://localhost:3000,http://example.com
+APP_CORS_ORIGIN=http://localhost:3000,http://localhost:3001,http://example.com
 
 ##== Database
 DATABASE_TYPE=postgres
@@ -102,7 +102,7 @@ AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN=1d
 - `APP_FALLBACK_LANGUAGE`: The fallback language used when the requested language is not supported.
 - `APP_LOG_LEVEL`: The log level. Options: `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`.
 - `APP_LOG_SERVICE`: The log service. Options: `console`, `google_logging`, `aws_cloudwatch`.
-- `APP_CORS_ORIGIN`: The CORS origin, allowing requests from specified origins. Options: comma-separated string (e.g., `http://localhost:3000,http://example.com`), `true`, `false`, `*`.
+- `APP_CORS_ORIGIN`: The CORS origin, allowing requests from specified origins. Options: comma-separated string (e.g., `http://localhost:3001,http://example.com`), `true`, `false`, `*`.
 
 #### Database variables
 
@@ -212,7 +212,7 @@ To run the application on a development server:
 docker compose up --build -d
 ```
 
-> Note: The application will run on port 3000 (<http://localhost:3000>)
+> Note: The application will run on port 3001 (<http://localhost:3001>)
 
 ## Upgrade
 

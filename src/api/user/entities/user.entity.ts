@@ -14,7 +14,7 @@ import {
 } from 'typeorm';
 
 // Import related entities normally
-import { PostEntity } from '@/api/post/entities/post.entity';
+import { SubscriptionEntity } from '@/api/subscription/entities/subscription.entity';
 import { SessionEntity } from './session.entity';
 
 @Entity('user')
@@ -35,6 +35,9 @@ export class UserEntity extends AbstractEntity {
   @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
   email!: string;
 
+  @Column({ name: 'full_name', length: 100, nullable: true })
+  fullName!: string;
+
   @Column()
   password!: string;
 
@@ -54,11 +57,11 @@ export class UserEntity extends AbstractEntity {
   })
   deletedAt!: Date;
 
-  @OneToMany(() => PostEntity, (post) => post.user)
-  posts!: Relation<PostEntity[]>;
-
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: Relation<SessionEntity[]>;
+
+  @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
+  subscriptions?: Relation<SubscriptionEntity[]>;
 
   // --- Hooks ---
   @BeforeInsert()

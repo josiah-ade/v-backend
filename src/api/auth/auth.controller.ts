@@ -1,12 +1,11 @@
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
-import { RefreshReqDto } from './dto/refresh.req.dto';
 import { RefreshResDto } from './dto/refresh.res.dto';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { RegisterResDto } from './dto/register.res.dto';
@@ -54,9 +53,12 @@ export class AuthController {
     type: RefreshResDto,
     summary: 'Refresh token',
   })
-  @Post('refresh')
-  async refresh(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {
-    return await this.authService.refreshToken(dto);
+  @Get('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RefreshResDto> {
+    return await this.authService.refreshToken(req, res);
   }
 
   @ApiPublic()

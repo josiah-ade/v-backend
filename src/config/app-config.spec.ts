@@ -79,22 +79,22 @@ describe('AppConfig', () => {
 
   describe('port', () => {
     it('should return the value of APP_PORT as a number', async () => {
-      process.env.APP_PORT = '3000';
+      process.env.APP_PORT = '3001';
       const config = await appConfig();
-      expect(config.port).toBe(3000);
+      expect(config.port).toBe(3001);
     });
 
     it('should return the value of PORT as a number', async () => {
-      process.env.PORT = '3000';
+      process.env.PORT = '3001';
       const config = await appConfig();
-      expect(config.port).toBe(3000);
+      expect(config.port).toBe(3001);
     });
 
-    it('should return 3000 when APP_PORT and PORT are not set', async () => {
+    it('should return 3001 when APP_PORT and PORT are not set', async () => {
       delete process.env.APP_PORT;
       delete process.env.PORT;
       const config = await appConfig();
-      expect(config.port).toBe(3000);
+      expect(config.port).toBe(3001);
     });
 
     it('should throw an error when APP_PORT is an invalid number', async () => {
@@ -108,7 +108,7 @@ describe('AppConfig', () => {
     });
 
     it('should throw an error when APP_PORT is a negative number', async () => {
-      process.env.APP_PORT = '-3000';
+      process.env.APP_PORT = '-3001';
       await expect(async () => await appConfig()).rejects.toThrow(Error);
     });
 

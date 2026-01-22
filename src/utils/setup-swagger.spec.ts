@@ -16,7 +16,7 @@ describe('setupSwagger', () => {
           useValue: {
             getOrThrow: jest.fn((key: string) => {
               if (key === 'app.name') return 'TestApp';
-              if (key === 'app.url') return 'http://localhost:3000';
+              if (key === 'app.url') return 'http://localhost:3001';
             }),
           },
         },

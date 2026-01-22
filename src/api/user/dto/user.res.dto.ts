@@ -1,5 +1,3 @@
-import { PostResDto } from '@/api/post/dto/post.res.dto';
-import { WrapperType } from '@/common/types/types';
 import {
   ClassField,
   StringField,
@@ -29,9 +27,9 @@ export class UserResDto {
   @Expose()
   image: string;
 
-  @ClassField(() => PostResDto)
-  @Expose()
-  posts?: WrapperType<PostResDto[]>;
+  // @ClassField(() => PostResDto)
+  // @Expose()
+  // posts?: WrapperType<PostResDto[]>;
 
   @ClassField(() => Date)
   @Expose()

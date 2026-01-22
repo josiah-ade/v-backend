@@ -14,17 +14,19 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AuthService } from './api/auth/auth.service';
 import { AppModule } from './app.module';
+import { SocketIoAdapter } from './common/adapters/socket-io';
 import { type AllConfigType } from './config/config.type';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { AuthGuard } from './guards/auth.guard';
 import setupSwagger from './utils/setup-swagger';
-import { SocketIoAdapter } from './common/adapters/socket-io';
+
+const cookieParser = require('cookie-parser');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
-
+  app.use(cookieParser());
   app.useLogger(app.get(Logger));
 
   // Setup security headers
@@ -48,7 +50,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  console.log(`Server will run on port: ${configService.getOrThrow('app.port', { infer: true })}`);
+  console.log(
+    `Server will run on port: ${configService.getOrThrow('app.port', { infer: true })}`,
+  );
   console.info('CORS Origin:', corsOrigin);
 
   // Use global prefix if you don't have subdomain
@@ -84,7 +88,7 @@ async function bootstrap() {
     setupSwagger(app);
   }
 
-   const socketAdapter = new SocketIoAdapter(app, configService);
+  const socketAdapter = new SocketIoAdapter(app, configService);
   app.useWebSocketAdapter(socketAdapter);
 
   await app.listen(configService.getOrThrow('app.port', { infer: true }));

@@ -1,12 +1,3 @@
-import { NumberField, StringField } from '@/decorators/field.decorators';
+import { RegisterResDto } from './register.res.dto';
 
-export class RefreshResDto {
-  @StringField()
-  accessToken!: string;
-
-  @StringField()
-  refreshToken!: string;
-
-  @NumberField()
-  tokenExpires!: number;
-}
+export class RefreshResDto extends RegisterResDto {}

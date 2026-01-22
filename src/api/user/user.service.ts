@@ -104,7 +104,7 @@ export class UserService {
   }
 
   async findOne(id: Uuid): Promise<UserResDto> {
-     if (!id) throw new ValidationException(ErrorCode.R000);
+     if (!id) throw new ValidationException(ErrorCode.E002);
     const user = await this.userRepository.findOneByOrFail({ id });
 
     return user.toDto(UserResDto);

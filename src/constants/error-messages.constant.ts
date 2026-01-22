@@ -14,19 +14,5 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.E001]: 'Username or email already exists',
   [ErrorCode.E002]: 'User not found',
   [ErrorCode.E003]: 'Email already exists',
-
-  // Avatar
-  [ErrorCode.A001]: 'No file uploaded',
-  [ErrorCode.A002]: 'Avatar Image does not exist',
-
-  // AI
-  [ErrorCode.AI001]: 'Text prompt must not be empty or less than 10 letters',
-  [ErrorCode.AI002]: 'Image sketch not provided',
-
-  // Creation
-  [ErrorCode.CR001]: 'You already have a creation with this title',
-
-  // Bids
-  [ErrorCode.BI001]: 'Duplicate bid amounts are not allowed on the same item.',
-  [ErrorCode.BI002]: 'You cannot bid on your own item or product.',
+  [ErrorCode.E004]: 'You entered wrong email or password',
 };
