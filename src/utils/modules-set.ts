@@ -3,6 +3,7 @@ import authConfig from '@/api/auth/config/auth.config';
 import { BackgroundModule } from '@/background/background.module';
 import appConfig from '@/config/app.config';
 import { AllConfigType } from '@/config/config.type';
+import paymentConfig from '@/config/payment/config/payment.config';
 import { Environment } from '@/constants/app.constant';
 import databaseConfig from '@/database/config/database.config';
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
@@ -30,7 +31,14 @@ function generateModulesSet() {
   const imports: ModuleMetadata['imports'] = [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig, authConfig, mailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        authConfig,
+        mailConfig,
+        paymentConfig,
+      ],
       envFilePath: ['.env'],
     }),
   ];

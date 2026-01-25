@@ -19,7 +19,7 @@ import { UserResDto } from './dto/user.res.dto';
 import { UserEntity } from './entities/user.entity';
 
 @Injectable()
-export class UserService {
+export class UserService { 
   private readonly logger = new Logger(UserService.name);
 
   constructor(

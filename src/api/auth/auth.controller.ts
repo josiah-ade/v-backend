@@ -31,7 +31,10 @@ export class AuthController {
     return await this.authService.signIn(userLogin, res);
   }
 
-  @ApiPublic()
+  @ApiPublic({
+    type: RegisterResDto,
+    summary: 'Register new user',
+  })
   @Post('email/register')
   async register(
     @Body() dto: RegisterReqDto,

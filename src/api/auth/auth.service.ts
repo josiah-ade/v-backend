@@ -96,7 +96,7 @@ export class AuthService {
       fullName: user.fullName,
       sessionId: session.id,
       hash,
-    });
+    }); 
 
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
@@ -268,7 +268,7 @@ export class AuthService {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
       });
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("Invalid token");
     }
 
     // Force logout if the session is in the blacklist

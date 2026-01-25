@@ -15,4 +15,6 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.E002]: 'User not found',
   [ErrorCode.E003]: 'Email already exists',
   [ErrorCode.E004]: 'You entered wrong email or password',
+
+  [ErrorCode.S001]: 'Failed to create subscription plan',
 };

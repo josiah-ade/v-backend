@@ -16,4 +16,7 @@ export enum ErrorCode {
   E002 = 'user.error.not_found',
   E003 = 'user.error.email_exists',
   E004 = 'user.password.email_not_exists',
+
+  // Subscription Errors
+  S001 = 'subscription.error.creation_failed',
 }

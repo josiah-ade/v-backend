@@ -1,13 +1,15 @@
+
+
 export function buildSuccessMessage(message: string) {
   return {
-    status: 'success',
+    success: true,
     message,
   };
 }
 
-export function buildnotFoundMessage(message: string) {
+export function buildFailMessage(message: string) {
   return {
-    status: 'not found',
+    success: false,
     message,
   };
 }

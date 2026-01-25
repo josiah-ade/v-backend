@@ -3,6 +3,7 @@ import { DatabaseConfig } from '@/database/config/database-config.type';
 import { MailConfig } from '@/mail/config/mail-config.type';
 import { RedisConfig } from '@/redis/config/redis-config.type';
 import { AppConfig } from './app-config.type';
+import { PaymentConfig } from './payment/config/payment-config.type';
 import { StorageConfig } from './storage/config/storage-config.type';
 
 export type AllConfigType = {
@@ -12,4 +13,5 @@ export type AllConfigType = {
   auth: AuthConfig;
   mail: MailConfig;
   storage: StorageConfig;
+  payment: PaymentConfig;
 };

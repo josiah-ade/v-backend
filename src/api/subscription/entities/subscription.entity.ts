@@ -1,8 +1,7 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common/types/common.type';
 import {
-  SubscriptionPlanType,
-  SubscriptionStatus,
+  SubscriptionStatus
 } from '@/constants/modules/subscritions/enums/subscription';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
@@ -17,6 +16,7 @@ import {
 
 @Entity('subscription')
 @Index('IDX_subscription_user_active', ['userId'], {
+  unique: true,
   where: `"status" = 'ACTIVE'`,
 })
 export class SubscriptionEntity extends AbstractEntity {
@@ -35,10 +35,14 @@ export class SubscriptionEntity extends AbstractEntity {
   user!: Relation<UserEntity>;
 
   @Column({
-    type: 'enum',
-    enum: SubscriptionPlanType,
+    name: 'plan_code',
   })
-  planType!: SubscriptionPlanType;
+  planCode!: string;
+
+  @Column({
+    name: 'plan_type',
+  })
+  planType!: string;
 
   @Column({
     type: 'enum',

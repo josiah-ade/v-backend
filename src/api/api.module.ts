@@ -3,9 +3,18 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
+import { PaymentModule } from './payment/payment.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [UserModule, HealthModule, AuthModule, HomeModule],
+  imports: [
+    UserModule,
+    HealthModule,
+    AuthModule,
+    HomeModule,
+    SubscriptionModule,
+    PaymentModule,
+  ],
 })
 export class ApiModule {}
