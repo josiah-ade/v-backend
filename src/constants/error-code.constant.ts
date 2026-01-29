@@ -19,4 +19,8 @@ export enum ErrorCode {
 
   // Subscription Errors
   S001 = 'subscription.error.creation_failed',
+
+  // Payment Errors
+  P001 = 'payment.error.reffrence_not_found',
+  P002 = 'payment.error.verification_failed',
 }

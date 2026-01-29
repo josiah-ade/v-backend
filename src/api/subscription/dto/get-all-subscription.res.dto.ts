@@ -6,9 +6,10 @@ import {
   StringField,
 } from '@/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
+import { SubscriptionPlanResDto } from './get-subscription-plans.res.dto';
 
 @Exclude()
-export class SubscriptionResDto {
+export class AllSubscriptionResDto {
   @Expose()
   @StringField()
   id!: Uuid;
@@ -32,6 +33,9 @@ export class SubscriptionResDto {
   @Expose()
   @StringField({ enum: SubscriptionStatus })
   status!: SubscriptionStatus;
+
+  @Expose()
+  plan: SubscriptionPlanResDto;
 
   @Expose()
   @DateField()

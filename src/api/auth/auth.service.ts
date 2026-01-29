@@ -65,7 +65,6 @@ export class AuthService {
     const { email, password } = dto;
     const user = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'password'],
     });
 
     const isPasswordValid =
@@ -96,7 +95,7 @@ export class AuthService {
       fullName: user.fullName,
       sessionId: session.id,
       hash,
-    }); 
+    });
 
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
@@ -209,7 +208,7 @@ export class AuthService {
 
   async refreshToken(req: Request, res: Response): Promise<RefreshResDto> {
     const refreshToken = req.cookies?.refreshToken;
-    
+
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
     }
@@ -268,7 +267,7 @@ export class AuthService {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
       });
     } catch {
-      throw new UnauthorizedException("Invalid token");
+      throw new UnauthorizedException('Invalid token');
     }
 
     // Force logout if the session is in the blacklist
@@ -318,6 +317,7 @@ export class AuthService {
     sessionId: string;
     hash: string;
   }): Promise<Token> {
+    
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
     });
@@ -329,7 +329,7 @@ export class AuthService {
           userId: data.id,
           email: data.email,
           fullName: data.fullName,
-          role: '', // TODO: add role
+          role: '',
           sessionId: data.sessionId,
         },
         {

@@ -1,7 +1,10 @@
 import { SuccessResponse } from '@/common/dto/success.dto';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 
-export function transformEmptyDto<T>(cls: ClassConstructor<T>, data: object[]): T[] {
+export function transformEmptyDto<T>(
+  cls: ClassConstructor<T>,
+  data: object[],
+): T[] {
   const transformed = plainToInstance(cls, JSON.parse(JSON.stringify(data)), {
     excludeExtraneousValues: true,
   });
@@ -23,6 +26,7 @@ export function transformSingleEmptyDto<T>(
 export function transformDto<T>(
   cls: ClassConstructor<T>,
   data: object[],
+  message?: string,
 ): SuccessResponse<T[]> {
   const transformed = plainToInstance(cls, JSON.parse(JSON.stringify(data)), {
     excludeExtraneousValues: true,
@@ -30,6 +34,7 @@ export function transformDto<T>(
 
   return {
     success: true,
+    message,
     data: transformed as T[],
   };
 }
@@ -37,6 +42,7 @@ export function transformDto<T>(
 export function transformSingleDto<T>(
   cls: ClassConstructor<T>,
   data: object,
+  message?: string,
 ): SuccessResponse<T> {
   const transformed = plainToInstance(cls, JSON.parse(JSON.stringify(data)), {
     excludeExtraneousValues: true,
@@ -44,6 +50,7 @@ export function transformSingleDto<T>(
 
   return {
     success: true,
+    message,
     data: transformed as T,
   };
 }

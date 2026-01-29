@@ -17,4 +17,7 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.E004]: 'You entered wrong email or password',
 
   [ErrorCode.S001]: 'Failed to create subscription plan',
+
+  [ErrorCode.P001]: 'Payment reference not found',
+  [ErrorCode.P002]: 'Payment verification failed',
 };

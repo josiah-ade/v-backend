@@ -21,12 +21,15 @@ export class PaymentEntity extends AbstractEntity {
 
   /* ------------------ USER ------------------ */
 
-  @Column({ name: 'user_id', type: 'uuid' })
-  userId!: Uuid;
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId?: Uuid;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'user_id' })
-  user!: Relation<UserEntity>;
+  user?: Relation<UserEntity>;
 
   /* ---------------- SUBSCRIPTION (OPTIONAL) ---------------- */
 
@@ -51,11 +54,11 @@ export class PaymentEntity extends AbstractEntity {
   @Column({ name: 'plan_code', nullable: true })
   planCode?: string;
 
-  @Column({ type: 'int' })
-  amount!: number;
-
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'numeric', precision: 10, scale: 2, default: 0 })
   fee!: number;
+
+  @Column({ type: 'numeric', precision: 12, scale: 2 })
+  amount!: number;
 
   @Column({ length: 3 })
   currency!: string;
@@ -72,8 +75,20 @@ export class PaymentEntity extends AbstractEntity {
   @Column()
   channel!: string;
 
-  @Column()
-  type!: string;
+  @Column({ name: 'plan_type', nullable: true })
+  planType!: string;
+
+  @Column({
+    name: 'plan_name',
+    nullable: true,
+  })
+  planName!: string;
+
+  @Column({
+    name: 'plan_duration',
+    nullable: true,
+  })
+  planDuration!: string;
 
   @Column()
   status!: string;

@@ -18,5 +18,9 @@ export class SuccessResponse<T> {
   success!: boolean;
 
   @Expose()
+  @StringField()
+  message!: string;
+
+  @Expose()
   data!: T;
 }

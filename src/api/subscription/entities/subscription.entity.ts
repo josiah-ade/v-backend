@@ -1,8 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common/types/common.type';
-import {
-  SubscriptionStatus
-} from '@/constants/modules/subscritions/enums/subscription';
+import { SubscriptionStatus } from '@/constants/modules/subscritions/enums/subscription';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -13,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
+import { SubscriptionPlanEntity } from './subscription-plan.entity';
 
 @Entity('subscription')
 @Index('IDX_subscription_user_active', ['userId'], {
@@ -34,15 +33,29 @@ export class SubscriptionEntity extends AbstractEntity {
   @JoinColumn({ name: 'user_id' })
   user!: Relation<UserEntity>;
 
+  @Column({ name: 'plan_id', type: 'uuid' })
+  planId!: Uuid;
+
+  @ManyToOne(() => SubscriptionPlanEntity, (plan) => plan.subscriptions, {
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'plan_id' })
+  plan!: Relation<SubscriptionPlanEntity>;
+
   @Column({
     name: 'plan_code',
   })
   planCode!: string;
 
   @Column({
-    name: 'plan_type',
+    name: 'plan_name',
   })
-  planType!: string;
+  planName!: string;
+
+  @Column({
+    name: 'plan_duration',
+  })
+  planDuration!: string;
 
   @Column({
     type: 'enum',
@@ -59,4 +72,7 @@ export class SubscriptionEntity extends AbstractEntity {
 
   @Column({ default: false })
   autoRenew!: boolean;
+
+  @Column({ name: 'expired_at', type: 'timestamptz', nullable: true })
+  expiredAt!: Date;
 }

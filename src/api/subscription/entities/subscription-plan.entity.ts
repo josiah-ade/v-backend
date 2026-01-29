@@ -5,8 +5,11 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
+import { SubscriptionEntity } from './subscription.entity';
 
 export enum SubscriptionDuration {
   WEEK = 'week',
@@ -37,7 +40,7 @@ export class SubscriptionPlanEntity extends AbstractEntity {
   @Column()
   title!: string;
 
-  @Column({ default: false })
+  @Column({ default: true })
   recurring!: boolean;
 
   @Column({ type: 'numeric' })
@@ -91,4 +94,7 @@ export class SubscriptionPlanEntity extends AbstractEntity {
     default: null,
   })
   deletedAt!: Date;
+
+  @OneToMany(() => SubscriptionEntity, (subscription) => subscription.plan)
+  subscriptions!: Relation<SubscriptionEntity[]>;
 }

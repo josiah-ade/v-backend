@@ -13,9 +13,10 @@ import {
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateSubscriptionPlanReqDto } from './dto/create-subscription-plans.req.dto';
+import { AllSubscriptionResDto } from './dto/get-all-subscription.res.dto';
 import { SubscriptionPlanResDto } from './dto/get-subscription-plans.res.dto';
-import { SubscriptionService } from './subscription.sevice';
 import { SubscriptionResDto } from './dto/get-subscription-status.res.dto';
+import { SubscriptionService } from './subscription.sevice';
 
 @ApiTags('subscriptions')
 @Controller({
@@ -77,10 +78,22 @@ export class SubscriptionController {
     summary: 'Get subscription status',
   })
   @ApiParam({ name: 'id', type: 'String' })
-  @Get('plan/status/:id')
+  @Get('status/:id')
   async getSubscriptionStatus(
     @Param('id', ParseUUIDPipe) id: Uuid,
   ): Promise<SuccessResponse<SubscriptionResDto>> {
     return this.subscriptionService.getSubscriptionStatus(id);
+  }
+
+  @ApiAuth({
+    type: SuccessResponse<AllSubscriptionResDto[]>,
+    summary: 'Get All User subscriptions ',
+  })
+  @ApiParam({ name: 'id', type: 'String' })
+  @Get('all/:id')
+  async getAllSubscriptions(
+    @Param('id', ParseUUIDPipe) id: Uuid,
+  ): Promise<SuccessResponse<AllSubscriptionResDto[]>> {
+    return this.subscriptionService.getAllSubscriptions(id);
   }
 }

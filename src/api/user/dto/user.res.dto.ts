@@ -13,6 +13,10 @@ export class UserResDto {
 
   @StringField()
   @Expose()
+  fullName: string;
+
+  @StringField()
+  @Expose()
   username: string;
 
   @StringField()

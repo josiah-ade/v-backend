@@ -27,6 +27,7 @@ import { MoreThan } from 'typeorm/find-options/operator/MoreThan';
 import { Not } from 'typeorm/find-options/operator/Not';
 import { Repository } from 'typeorm/repository/Repository';
 import { CreateSubscriptionPlanReqDto } from './dto/create-subscription-plans.req.dto';
+import { AllSubscriptionResDto } from './dto/get-all-subscription.res.dto';
 import { SubscriptionPlanResDto } from './dto/get-subscription-plans.res.dto';
 import { SubscriptionResDto } from './dto/get-subscription-status.res.dto';
 import { SubscriptionPlanEntity } from './entities/subscription-plan.entity';
@@ -50,7 +51,11 @@ export class SubscriptionService {
       order: { price: 'ASC' },
     });
 
-    return transformDto(SubscriptionPlanResDto, subscriptionPlans);
+    return transformDto(
+      SubscriptionPlanResDto,
+      subscriptionPlans,
+      `${subscriptionPlans.length ? 'Subscription plans fetched successfully.' : 'No subscription plans.'}`,
+    );
   }
 
   async getSubscriptionPlan(
@@ -68,7 +73,11 @@ export class SubscriptionService {
         'Subscription plan not found',
       );
 
-    return transformSingleDto(SubscriptionPlanResDto, subscriptionPlan);
+    return transformSingleDto(
+      SubscriptionPlanResDto,
+      subscriptionPlan,
+      'subscription plan fetched successfully.',
+    );
   }
 
   async createSubscriptionPlan(
@@ -136,6 +145,31 @@ export class SubscriptionService {
     );
   }
 
+  async getAllSubscriptions(
+    id: Uuid,
+  ): Promise<SuccessResponse<AllSubscriptionResDto[]>> {
+    if (!id) throw new ValidationException(ErrorCode.R000);
+
+    await this.expireSubscriptionsIfNeeded(id);
+
+    const plan = await this.subscriptionRepository.find({
+      where: {
+        userId: id,
+      },
+      order: {
+        id: 'DESC',
+      },
+      relations: ['plan'],
+    });
+
+    console.log(plan);
+    return transformDto(
+      AllSubscriptionResDto,
+      plan,
+      `${plan.length ? 'Subscriptions fetched successfully.' : 'No subscriptions found.'}`,
+    );
+  }
+
   async getSubscriptionStatus(
     id: Uuid,
   ): Promise<SuccessResponse<SubscriptionResDto>> {
@@ -150,13 +184,34 @@ export class SubscriptionService {
         userId: id,
         startDate: LessThanOrEqual(now),
         endDate: MoreThan(now),
+        status: SubscriptionStatus.ACTIVE,
       },
       order: {
         endDate: 'DESC',
       },
     });
 
-    return transformSingleDto(SubscriptionResDto, plan);
+    return transformSingleDto(
+      SubscriptionResDto,
+      plan,
+      `${plan ? 'Subscription fetched successfully.' : 'No active subscription.'}`,
+    );
+  }
+
+  async expireActiveSubscriptions(userId: Uuid): Promise<void> {
+    const now = new Date();
+
+    await this.subscriptionRepository.update(
+      {
+        userId,
+        status: SubscriptionStatus.ACTIVE,
+        endDate: MoreThan(now),
+      },
+      {
+        status: SubscriptionStatus.EXPIRED,
+        expiredAt: now,
+      },
+    );
   }
 
   private async expireSubscriptionsIfNeeded(userId: Uuid): Promise<void> {
@@ -170,6 +225,7 @@ export class SubscriptionService {
       },
       {
         status: SubscriptionStatus.EXPIRED,
+        expiredAt: now,
       },
     );
   }

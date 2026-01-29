@@ -65,11 +65,4 @@ export class SubscriptionPlanResDto {
   @StringField({ enum: BillingCycle, nullable: true })
   billingCycle?: BillingCycle;
 
-  // @Expose()
-  // @NumberField()
-  // createdAt!: number;
-
-  // @Expose()
-  // @NumberField()
-  // updatedAt!: number;
 }
