@@ -19,7 +19,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import crypto from 'crypto';
+import crypto, { randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import ms from 'ms';
 import { Repository } from 'typeorm';
@@ -30,6 +30,7 @@ import { LoginResDto } from './dto/login.res.dto';
 import { RefreshResDto } from './dto/refresh.res.dto';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { RegisterResDto } from './dto/register.res.dto';
+import { SocialResDto } from './dto/social.login.req.dto';
 import { JwtPayloadType } from './types/jwt-payload.type';
 import { JwtRefreshPayloadType } from './types/jwt-refresh-payload.type';
 
@@ -206,6 +207,94 @@ export class AuthService {
     });
   }
 
+  async socialLogin(
+    user: SocialResDto,
+    provider: 'google' | 'facebook',
+    res: Response,
+  ): Promise<{ accessToken: string; userId: string; tokenExpires: number }> {
+    let existingUser: UserEntity | null = null;
+
+    existingUser = await this.userRepository.findOne({
+      where: { socialId: user.socialId, provider },
+    });
+
+    if (!existingUser && user.email) {
+      existingUser = await this.userRepository.findOne({
+        where: { email: user.email },
+      });
+
+      if (existingUser) {
+        // Link their social account to existing account
+        existingUser.socialId = user.socialId;
+        existingUser.provider = provider;
+        await existingUser.save();
+      }
+    }
+
+    if (!existingUser) {
+      // Facebook without email — generate a placeholder
+      const email = user.email ?? `${user.socialId}@${provider}.noemail`;
+
+      existingUser = new UserEntity({
+        fullName: user.fullName,
+        email,
+        image: user.picture || '',
+        provider,
+        socialId: user.socialId,
+        password: randomBytes(32).toString('hex'),
+        lastSeen: new Date(),
+        createdBy: SYSTEM_USER_ID,
+        updatedBy: SYSTEM_USER_ID,
+      });
+
+      await existingUser.save();
+    }
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = new SessionEntity({
+      hash,
+      userId: existingUser.id,
+      createdBy: SYSTEM_USER_ID,
+      updatedBy: SYSTEM_USER_ID,
+    });
+
+    await session.save();
+
+    const regToken = await this.createToken({
+      id: existingUser.id,
+      email: existingUser.email,
+      fullName: existingUser.fullName,
+      sessionId: session.id,
+      hash,
+    });
+
+    const refreshExpiresIn = this.configService.getOrThrow(
+      'auth.refreshExpires',
+      {
+        infer: true,
+      },
+    );
+
+    const refreshExpiresInMs = ms(refreshExpiresIn);
+
+    this.authCookieService.setRefreshTokenCookie(
+      res,
+      regToken.refreshToken,
+      refreshExpiresInMs,
+    );
+
+    const { refreshToken, ...safeToken } = regToken;
+
+    return {
+      ...safeToken,
+      userId: existingUser.id,
+    };
+  }
+
   async refreshToken(req: Request, res: Response): Promise<RefreshResDto> {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -317,7 +406,6 @@ export class AuthService {
     sessionId: string;
     hash: string;
   }): Promise<Token> {
-    
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
     });

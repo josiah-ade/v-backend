@@ -47,6 +47,12 @@ export class UserEntity extends AbstractEntity {
   @Column({ default: '' })
   image?: string;
 
+  @Column({ nullable: true })
+  provider?: string;
+
+  @Column({ name: 'social_id', nullable: true })
+  socialId?: string;
+
   @Column({ name: 'last_seen', type: 'timestamptz', nullable: true })
   lastSeen?: Date;
 

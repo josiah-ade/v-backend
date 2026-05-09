@@ -8,11 +8,14 @@ import { SubscriptionStatus } from '@/constants/modules/subscritions/enums/subsc
 import { ReferenceGenerator } from '@/decorators/generators/reference.generators';
 import { ValidationException } from '@/exceptions/validation.exception';
 import { calculateEndDate } from '@/utils/date/subscription-date.utils';
+import { buildSuccessMessage } from '@/utils/response-builder.utils';
+import { transformSingleEmptyDto } from '@/utils/transformers/transform-dto';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom } from 'rxjs';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { Repository } from 'typeorm/repository/Repository';
 import { SubscriptionPlanEntity } from '../subscription/entities/subscription-plan.entity';
 import { SubscriptionEntity } from '../subscription/entities/subscription.entity';
@@ -39,6 +42,8 @@ export class PaystackPaymentService {
   async verifyPaystackPayment(reference: string): Promise<SuccessResDto> {
     if (!reference) throw new ValidationException(ErrorCode.P001);
 
+    // return {success:false, message: "Verification failed"};
+
     const verificationData = await this.verifyWithPaystack(reference);
 
     this.ensurePaymentSuccess(verificationData);
@@ -51,7 +56,10 @@ export class PaystackPaymentService {
       await this.processNewPayment(verificationData);
     }
 
-    return { success: true, message: 'Payment verified successfully' };
+    return transformSingleEmptyDto(
+      SuccessResDto,
+      buildSuccessMessage('Payment verified successfully.'),
+    );
   }
 
   private async verifyWithPaystack(reference: string) {
@@ -102,25 +110,100 @@ export class PaystackPaymentService {
     }
   }
 
+  // private async processNewPayment(verificationData: any) {
+  //   const meta = verificationData.data.metadata ?? {};
+  //   const user = meta.user_id
+  //     ? await this.userRepository.findOneBy({ id: meta.user_id })
+  //     : null;
+
+  //   const subscription = await this.createSubscriptionIfNeeded(meta, user);
+
+  //   const payment = this.createPaymentEntity(
+  //     verificationData,
+  //     meta,
+  //     user,
+  //     subscription,
+  //   );
+
+  //   await this.paymentRepository.save(payment);
+  // }
+
   private async processNewPayment(verificationData: any) {
-    const meta = verificationData.data.metadata ?? {};
-    const user = meta.user_id
-      ? await this.userRepository.findOneBy({ id: meta.user_id })
-      : null;
+    await this.subscriptionRepository.manager.transaction(async (manager) => {
+      const providerRef = verificationData.data.reference;
 
-    const subscription = await this.createSubscriptionIfNeeded(meta, user);
+      const existingPayment = await manager.findOne(PaymentEntity, {
+        where: { providerReference: providerRef },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    const payment = this.createPaymentEntity(
-      verificationData,
-      meta,
-      user,
-      subscription,
-    );
+      if (existingPayment) return;
 
-    await this.paymentRepository.save(payment);
+      const meta = verificationData.data.metadata ?? {};
+      const user = meta.user_id
+        ? await manager.findOne(UserEntity, {
+            where: { id: meta.user_id },
+          })
+        : null;
+
+      const subscription = await this.createSubscriptionIfNeededWithManager(
+        manager,
+        meta,
+        user,
+      );
+
+      const payment = this.createPaymentEntity(
+        verificationData,
+        meta,
+        user,
+        subscription,
+      );
+
+      await manager.save(payment);
+    });
   }
 
-  private async createSubscriptionIfNeeded(
+  // private async createSubscriptionIfNeeded(
+  //   meta: any,
+  //   user?: UserEntity | null,
+  // ) {
+  //   if (
+  //     meta.type !== 'recurring' ||
+  //     !meta.user_id ||
+  //     !meta.plan_code ||
+  //     !meta.plan_duration
+  //   ) {
+  //     return null;
+  //   }
+
+  //   const plan = await this.subscriptionPlanRepository.findOneByOrFail({
+  //     code: meta.plan_code,
+  //   });
+
+  //   await this.subscriptionService.expireActiveSubscriptions(meta.user_id);
+
+  //   const startDate = new Date();
+  //   const subscription = this.subscriptionRepository.create({
+  //     userId: meta.user_id,
+  //     user: user ?? undefined,
+  //     planId: plan.id,
+  //     plan: plan ?? undefined,
+  //     planCode: meta.plan_code,
+  //     planName: meta.title,
+  //     planDuration: meta.plan_duration,
+  //     status: SubscriptionStatus.ACTIVE,
+  //     startDate: startDate,
+  //     endDate: calculateEndDate(startDate, meta.plan_duration),
+  //     autoRenew: true,
+  //     createdBy: SYSTEM_USER_ID,
+  //     updatedBy: SYSTEM_USER_ID,
+  //   });
+
+  //   return this.subscriptionRepository.save(subscription);
+  // }
+
+  private async createSubscriptionIfNeededWithManager(
+    manager: EntityManager,
     meta: any,
     user?: UserEntity | null,
   ) {
@@ -133,14 +216,25 @@ export class PaystackPaymentService {
       return null;
     }
 
-    const plan = await this.subscriptionPlanRepository.findOneByOrFail({
+    const plan = await manager.findOneByOrFail(SubscriptionPlanEntity, {
       code: meta.plan_code,
     });
 
-    await this.subscriptionService.expireActiveSubscriptions(meta.user_id);
+    await manager.update(
+      SubscriptionEntity,
+      {
+        userId: meta.user_id,
+        status: SubscriptionStatus.ACTIVE,
+      },
+      {
+        status: SubscriptionStatus.EXPIRED,
+        expiredAt: new Date(),
+      },
+    );
 
     const startDate = new Date();
-    const subscription = this.subscriptionRepository.create({
+
+    const subscription = manager.create(SubscriptionEntity, {
       userId: meta.user_id,
       user: user ?? undefined,
       planId: plan.id,
@@ -149,14 +243,14 @@ export class PaystackPaymentService {
       planName: meta.title,
       planDuration: meta.plan_duration,
       status: SubscriptionStatus.ACTIVE,
-      startDate: startDate,
+      startDate,
       endDate: calculateEndDate(startDate, meta.plan_duration),
       autoRenew: true,
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });
 
-    return this.subscriptionRepository.save(subscription);
+    return manager.save(subscription);
   }
 
   private createPaymentEntity(

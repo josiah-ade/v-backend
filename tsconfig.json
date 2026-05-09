@@ -24,6 +24,7 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "useDefineForClassFields": false,
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/api/*": ["src/api/*"],
       "@/background/*": ["src/background/*"],

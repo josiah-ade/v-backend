@@ -40,6 +40,22 @@ class EnvironmentVariablesValidator {
   @IsNotEmpty()
   @IsMs()
   AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FACEBOOK_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FACEBOOK_CLIENT_SECRET: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -55,6 +71,9 @@ export default registerAs<AuthConfig>('auth', () => {
     forgotExpires: process.env.AUTH_FORGOT_TOKEN_EXPIRES_IN,
     confirmEmailSecret: process.env.AUTH_CONFIRM_EMAIL_SECRET,
     confirmEmailExpires: process.env.AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN,
-    
+    GoogleClientID: process.env.GOOGLE_CLIENT_ID,
+    GoogleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    FacebookClientID: process.env.FACEBOOK_CLIENT_ID,
+    FacebookClientSecret: process.env.FACEBOOK_CLIENT_SECRET,
   };
 });

@@ -2,7 +2,7 @@ import { CursorPaginatedDto } from '@/common/dto/cursor-pagination/paginated.dto
 import { OffsetPaginatedDto } from '@/common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@/common/types/common.type';
 import { CurrentUser } from '@/decorators/current-user.decorator';
-import { ApiAuth } from '@/decorators/http.decorators';
+import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
 import {
   Body,
   Controller,
@@ -55,7 +55,7 @@ export class UserController {
   }
 
   @Get()
-  @ApiAuth({
+  @ApiPublic({
     type: UserResDto,
     summary: 'List users',
     isPaginated: true,

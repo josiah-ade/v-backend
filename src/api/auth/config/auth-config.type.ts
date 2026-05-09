@@ -7,4 +7,8 @@ export type AuthConfig = {
   forgotExpires: string;
   confirmEmailSecret: string;
   confirmEmailExpires: string;
+  GoogleClientID: string;
+  GoogleClientSecret: string;
+  FacebookClientID: string;
+  FacebookClientSecret: string;
 };

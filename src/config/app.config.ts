@@ -24,6 +24,14 @@ class EnvironmentVariablesValidator {
   @IsOptional()
   APP_NAME: string;
 
+  @IsString()
+  @IsOptional()
+  APP_CALLBACK_GOOGLE_URL: string;
+
+  @IsString()
+  @IsOptional()
+  APP_CALLBACK_FACEBOOK_URL: string;
+
   @IsUrl({ require_tld: false })
   @IsOptional()
   APP_URL: string;
@@ -83,6 +91,12 @@ export default registerAs<AppConfig>('app', () => {
     nodeEnv: process.env.NODE_ENV || Environment.DEVELOPMENT,
     name: process.env.APP_NAME || 'app',
     url: process.env.APP_URL || `http://localhost:${port}`,
+    googleCallbackUrl:
+      process.env.APP_CALLBACK_GOOGLE_URL ||
+      `http://localhost:${port}/auth/google/callback`,
+    facebookCallbackUrl:
+      process.env.APP_CALLBACK_FACEBOOK_URL ||
+      `http://localhost:${port}/auth/facebook/callback`,
     port,
     debug: process.env.APP_DEBUG === 'true',
     apiPrefix: process.env.API_PREFIX || 'api',

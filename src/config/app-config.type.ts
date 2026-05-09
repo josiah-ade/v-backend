@@ -2,6 +2,8 @@ export type AppConfig = {
   nodeEnv: string;
   name: string;
   url: string;
+  googleCallbackUrl: string;
+  facebookCallbackUrl: string;
   port: number;
   debug: boolean;
   apiPrefix: string;
