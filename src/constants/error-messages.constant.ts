@@ -20,4 +20,6 @@ export const ErrorMessages: Record<ErrorCode, string> = {
 
   [ErrorCode.P001]: 'Payment reference not found',
   [ErrorCode.P002]: 'Payment verification failed',
+  
+  [ErrorCode.R001]: 'Resume Does not exist',
 };

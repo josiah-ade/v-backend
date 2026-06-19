@@ -34,7 +34,7 @@ export function transformDto<T>(
 
   return {
     success: true,
-    message,
+   message: message || 'success',
     data: transformed as T[],
   };
 }
@@ -50,7 +50,7 @@ export function transformSingleDto<T>(
 
   return {
     success: true,
-    message,
+    message: message || 'success',
     data: transformed as T,
   };
 }

@@ -14,6 +14,8 @@ import {
 } from 'typeorm';
 
 // Import related entities normally
+import { PaymentEntity } from '@/api/payment/entities/payment.entity';
+import { ResumeEntity } from '@/api/resume/entities/resume.entity';
 import { SubscriptionEntity } from '@/api/subscription/entities/subscription.entity';
 import { SessionEntity } from './session.entity';
 
@@ -68,6 +70,12 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
   subscriptions?: Relation<SubscriptionEntity[]>;
+
+  @OneToMany(() => PaymentEntity, (payment) => payment.user)
+  payments?: Relation<PaymentEntity[]>;
+
+  @OneToMany(() => ResumeEntity, (resume) => resume.user)
+  resumes?: Relation<ResumeEntity[]>;
 
   // --- Hooks ---
   @BeforeInsert()

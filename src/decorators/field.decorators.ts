@@ -1,8 +1,10 @@
 import { Constructor } from '@/common/types/types';
+import type { Type as ClassType } from '@nestjs/common';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty, type ApiPropertyOptions } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsDefined,
@@ -11,11 +13,12 @@ import {
   IsInt,
   IsJWT,
   IsNumber,
+  IsObject,
   IsOptional,
   IsPositive,
   IsString,
-  IsUrl,
   IsUUID,
+  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -46,6 +49,7 @@ interface IStringFieldOptions extends IFieldOptions {
   maxLength?: number;
   toLowerCase?: boolean;
   toUpperCase?: boolean;
+  allowEmpty?: boolean;
 }
 
 interface IEnumFieldOptions extends IFieldOptions {
@@ -105,48 +109,6 @@ export function NumberFieldOptional(
   );
 }
 
-export function StringField(
-  options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
-): PropertyDecorator {
-  const decorators = [Type(() => String), IsString({ each: options.each })];
-
-  if (options.nullable) {
-    decorators.push(IsNullable({ each: options.each }));
-  } else {
-    decorators.push(NotEquals(null, { each: options.each }));
-  }
-
-  if (options.swagger !== false) {
-    const { required = true, ...restOptions } = options;
-    decorators.push(
-      ApiProperty({
-        type: String,
-        required: !!required,
-        ...restOptions,
-        isArray: options.each,
-      }),
-    );
-  }
-
-  const minLength = options.minLength || 1;
-
-  decorators.push(MinLength(minLength, { each: options.each }));
-
-  if (options.maxLength) {
-    decorators.push(MaxLength(options.maxLength, { each: options.each }));
-  }
-
-  if (options.toLowerCase) {
-    decorators.push(ToLowerCase());
-  }
-
-  if (options.toUpperCase) {
-    decorators.push(ToUpperCase());
-  }
-
-  return applyDecorators(...decorators);
-}
-
 export function TokenField(
   options: Omit<ApiPropertyOptions, 'type'> & ITokenFieldOptions = {},
 ): PropertyDecorator {
@@ -181,6 +143,52 @@ export function StringFieldOptional(
     IsOptional({ each: options.each }),
     StringField({ required: false, ...options }),
   );
+}
+
+export function StringField(
+  options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
+): PropertyDecorator {
+  const decorators = [Type(() => String), IsString({ each: options.each })];
+
+  if (options.nullable) {
+    decorators.push(IsNullable({ each: options.each }));
+  } else {
+    decorators.push(NotEquals(null, { each: options.each }));
+  }
+
+  if (options.swagger !== false) {
+    const { required = true, ...restOptions } = options;
+    decorators.push(
+      ApiProperty({
+        type: String,
+        required: !!required,
+        ...restOptions,
+        isArray: options.each,
+      }),
+    );
+  }
+
+  const minLength = options.minLength || 1;
+
+  if (options.allowEmpty) {
+    decorators.push(MinLength(0, { each: options.each }));
+  } else {
+    decorators.push(MinLength(minLength, { each: options.each }));
+  }
+
+  if (options.maxLength) {
+    decorators.push(MaxLength(options.maxLength, { each: options.each }));
+  }
+
+  if (options.toLowerCase) {
+    decorators.push(ToLowerCase());
+  }
+
+  if (options.toUpperCase) {
+    decorators.push(ToUpperCase());
+  }
+
+  return applyDecorators(...decorators);
 }
 
 export function PasswordField(
@@ -400,6 +408,107 @@ export function EnumFieldOptional<TEnum extends object>(
   return applyDecorators(
     IsOptional({ each: options.each }),
     EnumField(getEnum, { required: false, ...options }),
+  );
+}
+
+// Add to field.decorators.ts
+
+export function ObjectField(
+  options: Omit<ApiPropertyOptions, 'type'> & IFieldOptions = {},
+): PropertyDecorator {
+  const decorators = [IsObject({ each: options.each })];
+
+  if (options.nullable) {
+    decorators.push(IsNullable({ each: options.each }));
+  } else {
+    decorators.push(NotEquals(null, { each: options.each }));
+  }
+
+  if (options.swagger !== false) {
+    const { required = true, ...restOptions } = options;
+    decorators.push(
+      ApiProperty({ type: Object, required: !!required, ...restOptions }),
+    );
+  }
+
+  return applyDecorators(...decorators);
+}
+
+export function ObjectFieldOptional(
+  options: Omit<ApiPropertyOptions, 'type' | 'required'> & IFieldOptions = {},
+): PropertyDecorator {
+  return applyDecorators(
+    IsOptional(),
+    ObjectField({ required: false, nullable: true, ...options }),
+  );
+}
+
+export function ArrayField(
+  options: Omit<ApiPropertyOptions, 'type'> & IFieldOptions = {},
+): PropertyDecorator {
+  const decorators = [IsArray()];
+
+  if (options.nullable) {
+    decorators.push(IsNullable());
+  } else {
+    decorators.push(NotEquals(null));
+  }
+
+  if (options.swagger !== false) {
+    const { required = true, ...restOptions } = options;
+    decorators.push(
+      ApiProperty({
+        type: [Object],
+        required: !!required,
+        isArray: true,
+        ...restOptions,
+      }),
+    );
+  }
+
+  return applyDecorators(...decorators);
+}
+
+export function ArrayFieldOptional(
+  options: Omit<ApiPropertyOptions, 'type' | 'required'> & IFieldOptions = {},
+): PropertyDecorator {
+  return applyDecorators(
+    IsOptional(),
+    ArrayField({ required: false, nullable: true, ...options }),
+  );
+}
+
+export function NestedField<T>(
+  typeFn: () => ClassType<T>,
+  options: Omit<ApiPropertyOptions, 'type' | 'required'> & IFieldOptions = {},
+): PropertyDecorator {
+  const { nullable, each, swagger, ...restOptions } = options;
+
+  const decorators: PropertyDecorator[] = [
+    ValidateNested({ each: !!each }),
+    Type(typeFn),
+    ApiProperty({
+      type: typeFn,
+      required: true,
+      nullable: !!nullable,
+      isArray: !!each,
+      ...restOptions,
+    }),
+  ];
+
+  if (nullable) decorators.push(IsNullable({ each: !!each }));
+  else decorators.push(NotEquals(null, { each: !!each }));
+
+  return applyDecorators(...decorators);
+}
+
+export function NestedFieldOptional<T>(
+  typeFn: () => ClassType<T>,
+  options: Omit<ApiPropertyOptions, 'type'> & IFieldOptions = {}, // ← remove 'required' from Omit
+): PropertyDecorator {
+  return applyDecorators(
+    IsOptional(),
+    NestedField(typeFn, { required: false, nullable: true, ...options }),
   );
 }
 

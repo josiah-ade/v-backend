@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
 import { PaymentModule } from './payment/payment.module';
+import { ResumeModule } from './resume/resume.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { UserModule } from './user/user.module';
 
@@ -15,6 +16,7 @@ import { UserModule } from './user/user.module';
     HomeModule,
     SubscriptionModule,
     PaymentModule,
+    ResumeModule,
   ],
 })
 export class ApiModule {}

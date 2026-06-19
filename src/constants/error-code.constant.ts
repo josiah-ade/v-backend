@@ -23,4 +23,7 @@ export enum ErrorCode {
   // Payment Errors
   P001 = 'payment.error.reffrence_not_found',
   P002 = 'payment.error.verification_failed',
+
+  // Resume Errors
+  R001 = 'resume.error.not_found',
 }

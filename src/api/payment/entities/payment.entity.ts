@@ -22,14 +22,14 @@ export class PaymentEntity extends AbstractEntity {
   /* ------------------ USER ------------------ */
 
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
-  userId?: Uuid;
+  userId!: Uuid;
 
   @ManyToOne(() => UserEntity, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'user_id' })
-  user?: Relation<UserEntity>;
+  user!: Relation<UserEntity>;
 
   /* ---------------- SUBSCRIPTION (OPTIONAL) ---------------- */
 

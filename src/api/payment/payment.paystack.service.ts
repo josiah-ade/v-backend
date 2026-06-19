@@ -140,11 +140,14 @@ export class PaystackPaymentService {
       if (existingPayment) return;
 
       const meta = verificationData.data.metadata ?? {};
-      const user = meta.user_id
-        ? await manager.findOne(UserEntity, {
-            where: { id: meta.user_id },
-          })
-        : null;
+
+      if (!meta.user_id) {
+        throw new ValidationException(ErrorCode.E002);
+      }
+
+      const user = await manager.findOne(UserEntity, {
+        where: { id: meta.user_id },
+      });
 
       const subscription = await this.createSubscriptionIfNeededWithManager(
         manager,
@@ -256,14 +259,14 @@ export class PaystackPaymentService {
   private createPaymentEntity(
     verificationData: any,
     meta: any,
-    user?: UserEntity | null,
+    user: UserEntity,
     subscription?: SubscriptionEntity | null,
   ) {
     return this.paymentRepository.create({
       email: verificationData.data.customer.email,
-      fullName: user?.fullName || 'Guest',
-      userId: user?.id ?? undefined,
-      user: user ?? undefined,
+      fullName: user.fullName,
+      userId: user.id,
+      user: user,
       subscriptionId: subscription?.id ?? null,
       subscription: subscription ?? undefined,
       planCode: meta.plan_code ?? undefined,
