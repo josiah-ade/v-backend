@@ -2,18 +2,26 @@
 # BUILD BASE IMAGE
 ##################
 
-FROM node:20-alpine AS base
+# FROM node:20-alpine AS base
+
+FROM node:20-bookworm-slim AS base
 
 # Accept optional custom registry (default is empty)
 ARG CUSTOM_REGISTRY=
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 
 # Install and use pnpm
 RUN npm install -g pnpm@9.12.3
+
 
 # Optionally set custom registry if provided
 RUN if [ -n "$CUSTOM_REGISTRY" ]; then \
       pnpm config set registry "$CUSTOM_REGISTRY"; \
     fi
+
+RUN npx --yes playwright install --with-deps chromium
+RUN chown -R node:node /ms-playwright
 
 #############################
 # BUILD FOR LOCAL DEVELOPMENT
@@ -28,6 +36,8 @@ COPY --chown=node:node package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including devDependencies)
 RUN pnpm install
+
+# Install playwright and its dependencies for Chromium
 
 # Now copy full source
 COPY --chown=node:node . .

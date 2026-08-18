@@ -98,6 +98,16 @@ export class AuthService {
       hash,
     });
 
+    const expiresIn = this.configService.getOrThrow('auth.expires', {
+      infer: true,
+    });
+
+    this.authCookieService.setAccessTokenCookie(
+      res,
+      token.accessToken,
+      ms(expiresIn),
+    );
+
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
       {
@@ -105,12 +115,10 @@ export class AuthService {
       },
     );
 
-    const refreshExpiresInMs = ms(refreshExpiresIn);
-
     this.authCookieService.setRefreshTokenCookie(
       res,
       token.refreshToken,
-      refreshExpiresInMs,
+      ms(refreshExpiresIn),
     );
 
     const { refreshToken, ...safeToken } = token;
@@ -184,6 +192,16 @@ export class AuthService {
       hash,
     });
 
+    const expiresIn = this.configService.getOrThrow('auth.expires', {
+      infer: true,
+    });
+
+    this.authCookieService.setAccessTokenCookie(
+      res,
+      regToken.accessToken,
+      ms(expiresIn),
+    );
+
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
       {
@@ -191,12 +209,10 @@ export class AuthService {
       },
     );
 
-    const refreshExpiresInMs = ms(refreshExpiresIn);
-
     this.authCookieService.setRefreshTokenCookie(
       res,
       regToken.refreshToken,
-      refreshExpiresInMs,
+      ms(refreshExpiresIn),
     );
 
     const { refreshToken, ...safeToken } = regToken;
@@ -272,6 +288,16 @@ export class AuthService {
       hash,
     });
 
+    const expiresIn = this.configService.getOrThrow('auth.expires', {
+      infer: true,
+    });
+
+    this.authCookieService.setAccessTokenCookie(
+      res,
+      regToken.accessToken,
+      ms(expiresIn),
+    );
+
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
       {
@@ -279,12 +305,10 @@ export class AuthService {
       },
     );
 
-    const refreshExpiresInMs = ms(refreshExpiresIn);
-
     this.authCookieService.setRefreshTokenCookie(
       res,
       regToken.refreshToken,
-      refreshExpiresInMs,
+      ms(refreshExpiresIn),
     );
 
     const { refreshToken, ...safeToken } = regToken;
@@ -321,6 +345,16 @@ export class AuthService {
       sessionId: session.id,
       hash: session.hash,
     });
+
+    const expiresIn = this.configService.getOrThrow('auth.expires', {
+      infer: true,
+    });
+
+    this.authCookieService.setAccessTokenCookie(
+      res,
+      token.accessToken,
+      ms(expiresIn),
+    );
 
     const refreshExpiresIn = this.configService.getOrThrow(
       'auth.refreshExpires',
@@ -422,7 +456,7 @@ export class AuthService {
         },
         {
           secret: this.configService.getOrThrow('auth.secret', { infer: true }),
-          expiresIn: tokenExpiresIn,
+          expiresIn: tokenExpires,
         },
       ),
       await this.jwtService.signAsync(

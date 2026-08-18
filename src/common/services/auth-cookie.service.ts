@@ -3,6 +3,16 @@ import { Response } from 'express';
 
 @Injectable()
 export class AuthCookieService {
+  setAccessTokenCookie(res: Response, token: string, expiresIn: number): void {
+    res.cookie('accessToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: expiresIn,
+      path: '/',
+    });
+  }
+
   setRefreshTokenCookie(res: Response, token: string, expiresIn: number): void {
     res.cookie('refreshToken', token, {
       httpOnly: true,

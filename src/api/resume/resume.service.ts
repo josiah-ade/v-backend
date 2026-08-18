@@ -37,6 +37,8 @@ export class ResumeService {
       throw new ValidationException(ErrorCode.R000);
     }
 
+    // console.log(dto.cvData);
+
     const user = await this.userRepository.findOneByOrFail({ id: userId });
 
     let resume: ResumeEntity;
@@ -94,9 +96,29 @@ export class ResumeService {
       throw new ValidationException(ErrorCode.R001);
     }
 
-    return transformSingleDto(GetResumeResDto, {
-      resume,
-    });
+    const {
+      createdAt,
+      updatedAt,
+      createdBy,
+      updatedBy,
+      id,
+      userId: _userId,
+      ...filteredResume
+    } = resume;
+
+    const finalData = {
+      cvId: id,
+      ...filteredResume,
+    };
+
+    return transformSingleDto(
+      GetResumeResDto,
+      {
+        cvData: finalData,
+      },
+      undefined,
+      false,
+    );
   }
 
   async findAll(
@@ -117,12 +139,30 @@ export class ResumeService {
     );
   }
 
+  async findOne(id: Uuid): Promise<SuccessResponse<GetResumeResDto>> {
+    const resume = await this.resumeRepository.findOneBy({ id });
+
+    if (!resume) {
+      throw new ValidationException(ErrorCode.R001);
+    }
+
+    return transformSingleDto(GetResumeResDto, resume, undefined, false);
+  }
+
+  async deleteAll(): Promise<SuccessResDto> {
+    await this.resumeRepository.clear();
+    return transformSingleDto(SuccessResDto, {
+      success: true,
+      message: 'All resumes deleted successfully',
+    });
+  }
+
   async uploadTemplateImage(
     file: Express.Multer.File,
     id: Uuid,
     userId: Uuid,
   ): Promise<SuccessResponse<CreateTemplateImageResDto>> {
-    console.log(userId, file, id);
+    // console.log(userId, file, id);
 
     if (!userId) throw new ValidationException(ErrorCode.E002);
     if (!file) throw new ValidationException(ErrorCode.I005);

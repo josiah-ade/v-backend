@@ -56,6 +56,15 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
   FACEBOOK_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  EXPORT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsMs()
+  EXPORT_TOKEN_EXPIRES_IN: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -75,5 +84,7 @@ export default registerAs<AuthConfig>('auth', () => {
     GoogleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     FacebookClientID: process.env.FACEBOOK_CLIENT_ID,
     FacebookClientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    exportSecret: process.env.EXPORT_SECRET,
+    exportExpires: process.env.EXPORT_TOKEN_EXPIRES_IN,
   };
 });

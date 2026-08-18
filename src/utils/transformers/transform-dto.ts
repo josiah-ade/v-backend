@@ -34,18 +34,39 @@ export function transformDto<T>(
 
   return {
     success: true,
-   message: message || 'success',
+    message: message || 'success',
     data: transformed as T[],
   };
 }
+
+// export function transformSingleDto<T>(
+//   cls: ClassConstructor<T>,
+//   data: object,
+//   message?: string,
+//   exclude?: boolean,
+// ): SuccessResponse<T> {
+//   console.log(plainToInstance(cls, JSON.parse(JSON.stringify(data)), {}));
+
+//   const transformed = plainToInstance(cls, JSON.parse(JSON.stringify(data)), {
+//     excludeExtraneousValues: exclude ? exclude : true,
+//   });
+
+//   console.log(transformed);
+//   return {
+//     success: true,
+//     message: message || 'success',
+//     data: transformed as T,
+//   };
+// }
 
 export function transformSingleDto<T>(
   cls: ClassConstructor<T>,
   data: object,
   message?: string,
+  exclude: boolean = true,
 ): SuccessResponse<T> {
   const transformed = plainToInstance(cls, JSON.parse(JSON.stringify(data)), {
-    excludeExtraneousValues: true,
+    excludeExtraneousValues: exclude,
   });
 
   return {

@@ -211,10 +211,10 @@ export class CreateCVDto {
   name?: string;
 
   @StringFieldOptional({ allowEmpty: true })
-  first_name?: string;
+  firstName?: string;
 
   @StringFieldOptional({ allowEmpty: true })
-  last_name?: string;
+  lastName?: string;
 
   @StringFieldOptional({ allowEmpty: true })
   title?: string;

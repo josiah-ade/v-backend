@@ -11,4 +11,6 @@ export type AuthConfig = {
   GoogleClientSecret: string;
   FacebookClientID: string;
   FacebookClientSecret: string;
+  exportSecret: string;
+  exportExpires: string;
 };

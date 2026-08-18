@@ -9,9 +9,9 @@ import { UserEntity } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -33,6 +33,12 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [GoogleStrategy, FacebookStrategy, JwtStrategy, AuthService, AuthCookieService],
+  providers: [
+    GoogleStrategy,
+    FacebookStrategy,
+    JwtStrategy,
+    AuthService,
+    AuthCookieService,
+  ],
 })
 export class AuthModule {}
