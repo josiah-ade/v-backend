@@ -16,6 +16,9 @@ export class ResumeEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   id: Uuid;
 
+  @Column({ name: 'cv_title', nullable: true })
+  cvTitle: Uuid;
+
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: Uuid;
 

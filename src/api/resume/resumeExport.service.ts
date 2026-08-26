@@ -18,13 +18,20 @@ import { chromium } from 'playwright';
 import { Repository } from 'typeorm/repository/Repository';
 import { GetResumeResDto } from './dto/get-resume.res.dto';
 import { ResumeEntity } from './entities/resume.entity';
+import {
+  measureResumeLayout,
+  stabilizePrintFragmentation,
+} from './pdf/resume-pdf.layout';
+import { addSafePageSpacing } from './pdf/resume-pdf.processor';
 
 @Injectable()
 export class ResumeExportService {
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
+
     @InjectRepository(ResumeEntity)
     private readonly resumeRepository: Repository<ResumeEntity>,
+
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -46,7 +53,8 @@ export class ResumeExportService {
     }
 
     const exportId = toUuid(randomUUID());
-    console.log(`exportId: ${exportId}`);
+
+    // console.log(`exportId: ${exportId}`);
 
     await this.setCache(exportId, userId, id);
 
@@ -56,11 +64,15 @@ export class ResumeExportService {
 
     try {
       const page = await browser.newPage({
-        viewport: { width: 794, height: 1123 }, // A4 at 96 DPI: 210mm × 297mm
+        viewport: {
+          width: 794,
+          height: 1123,
+        },
       });
 
-      page.on('console', (msg) => console.log('[PAGE LOG]', msg.text()));
-      page.on('pageerror', (err) => console.log('[PAGE ERROR]', err.message));
+      // page.on('console', (msg) => console.log('[PAGE LOG]', msg.text()));
+
+      // page.on('pageerror', (err) => console.log('[PAGE ERROR]', err.message));
 
       await page.emulateMedia({
         media: 'print',
@@ -69,7 +81,8 @@ export class ResumeExportService {
       await page.goto(
         `${process.env.APP_FRONT_URL}/resume/export/${exportId}`,
         {
-          waitUntil: 'networkidle',
+          waitUntil: 'domcontentloaded',
+          timeout: 60000,
         },
       );
 
@@ -80,14 +93,38 @@ export class ResumeExportService {
         },
       );
 
-      // await page.screenshot({
-      //   path: '/app/debug-export.png',
-      //   fullPage: true,
-      // });
+      /*
+       * ===================================================
+       * STEP 1
+       * Normalize only the horizontal-row margin condition
+       * that causes Chromium to create large false page gaps.
+       * ===================================================
+       */
 
-      const pdf = await page.pdf({
+      await stabilizePrintFragmentation(page);
+
+      /*
+       * ===================================================
+       * STEP 2
+       * Measure optional header and sidebar independently.
+       * ===================================================
+       */
+
+      const { sidebar: sidebarInfo, header: headerInfo } =
+        await measureResumeLayout(page);
+
+      // console.log('[PDF SIDEBAR]', sidebarInfo);
+      // console.log('[PDF HEADER]', headerInfo);
+
+      /*
+       * ===================================================
+       * STEP 3
+       * Generate Chromium's zero-margin A4 PDF.
+       * ===================================================
+       */
+
+      const rawPdf = await page.pdf({
         format: 'A4',
-        preferCSSPageSize: true,
         printBackground: true,
         margin: {
           top: '0',
@@ -97,9 +134,35 @@ export class ResumeExportService {
         },
       });
 
+      /*
+       * ===================================================
+       * STEP 4
+       * Add safe visual spacing after Chromium pagination.
+       *
+       * Because this happens after pagination, changing
+       * PAGE_SPACING_MM does not create another Chromium page.
+       * ===================================================
+       */
+
+      const PAGE_SPACING_MM = 6;
+
+      const pdf = await addSafePageSpacing(
+        rawPdf,
+        sidebarInfo,
+        headerInfo,
+        PAGE_SPACING_MM,
+      );
+
+      /*
+       * ===================================================
+       * STEP 5
+       * Return the final PDF.
+       * ===================================================
+       */
+
       res.set({
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="resume.pdf"',
+        'Content-Disposition': `attachment; filename=${resume.cvTitle}.pdf`,
         'Content-Length': pdf.length,
       });
 
@@ -117,12 +180,16 @@ export class ResumeExportService {
     }
 
     const cacheKey = createCacheKey(CacheKey.RESUME_EXPORT, id);
+
     const cachedData = await this.cacheManager.get<{
       userId: Uuid;
       resumeId: Uuid;
     }>(cacheKey);
 
-    console.log('cachedData', { cachedData, id });
+    // console.log('cachedData', {
+    //   cachedData,
+    //   id,
+    // });
 
     if (!cachedData) {
       throw new ValidationException(ErrorCode.R001);
@@ -133,6 +200,7 @@ export class ResumeExportService {
     const resume = await this.resumeRepository.findOne({
       where: {
         id: resumeId,
+
         userId,
       },
     });

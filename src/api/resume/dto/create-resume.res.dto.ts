@@ -208,6 +208,9 @@ export class CreateCVDto {
   cvId?: Uuid;
 
   @StringFieldOptional({ allowEmpty: true })
+  cvTitle?: string;
+
+  @StringFieldOptional({ allowEmpty: true })
   name?: string;
 
   @StringFieldOptional({ allowEmpty: true })
